@@ -57,7 +57,10 @@ class EquityChart {
     // Listen for view changes to render
     state.on('viewChanged', (data) => {
       if (data.to === 'stats') {
-        setTimeout(() => this.render(), 100); // Small delay for DOM update
+        // Wait for view animation to complete (200ms show + 300ms animation + buffer)
+        setTimeout(() => {
+          this.resize();
+        }, 550);
       }
     });
 
@@ -71,10 +74,18 @@ class EquityChart {
     if (!this.canvas || !this.container) return;
 
     const rect = this.container.getBoundingClientRect();
+
+    // Skip if container has no dimensions (e.g., view not visible)
+    if (rect.width === 0 || rect.height === 0) {
+      return;
+    }
+
     this.canvas.width = rect.width * this.dpr;
     this.canvas.height = rect.height * this.dpr;
     this.canvas.style.width = `${rect.width}px`;
     this.canvas.style.height = `${rect.height}px`;
+
+    // Setting canvas width/height resets the context, so reapply transformations
     this.ctx.scale(this.dpr, this.dpr);
 
     this.render();
@@ -92,6 +103,12 @@ class EquityChart {
     const data = stats.buildEquityCurve();
     const width = this.canvas.width / this.dpr;
     const height = this.canvas.height / this.dpr;
+
+    // Skip render if canvas hasn't been properly sized yet
+    if (width === 0 || height === 0) {
+      return;
+    }
+
     const colors = this.getColors();
 
     // Clear canvas
