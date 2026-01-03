@@ -1,0 +1,230 @@
+/* ========================================
+   Base Styles - Reset & Typography
+   ======================================== */
+
+/* === Reset === */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--font-regular);
+  line-height: var(--leading-normal);
+  color: var(--text-primary);
+  background: var(--bg-base);
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Smooth theme transitions - wildcard for buttery theme switching */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    fill 0.35s ease,
+    stroke 0.35s ease !important;
+}
+
+/* Override for interactive elements - keep snappy hover/transform feel */
+.btn,
+.preset-btn,
+.icon-btn,
+.filter-btn,
+.trade-card,
+.result-card {
+  transition:
+    transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.25s ease,
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease !important;
+}
+
+/* Table row hover stays fast */
+.journal-table tbody tr,
+.scenarios-table tr {
+  transition: background-color 0.15s ease !important;
+}
+
+/* Toggle switch components */
+.toggle-switch__slider {
+  transition: background-color 0.35s ease !important;
+}
+
+/* Settings panel & overlay - custom slide animation */
+.settings-panel,
+.settings-overlay {
+  transition:
+    transform 0.35s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.3s ease-out,
+    visibility 0.35s ease,
+    background-color 0.35s ease !important;
+}
+
+.toggle-switch__slider::after {
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 0.35s ease !important;
+}
+
+/* Chevron rotation stays smooth */
+.card__chevron,
+.scenarios-toggle__icon {
+  transition: transform 0.25s ease !important;
+}
+
+/* Collapsible content - keep expand/collapse animation */
+.card__body--collapsible,
+.scenarios-content {
+  transition:
+    max-height 0.3s ease-out,
+    opacity 0.2s ease-out,
+    padding 0.3s ease-out,
+    background-color 0.35s ease,
+    border-color 0.35s ease !important;
+}
+
+/* Settings card has custom fade animation */
+.card--settings .card__body--collapsible {
+  transition: opacity 0.25s ease-out, border-color 0.25s ease-out, box-shadow 0.25s ease-out !important;
+}
+
+/* === Typography === */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+
+p {
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+/* Monospace text */
+.mono,
+code,
+kbd {
+  font-family: var(--font-mono);
+}
+
+/* === Focus States === */
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: none;
+}
+
+/* Only show focus ring on keyboard navigation for accessibility */
+button:focus-visible,
+a:focus-visible {
+  box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--primary);
+}
+
+/* === Selection === */
+
+::selection {
+  background: var(--primary);
+  color: var(--text-inverse);
+}
+
+/* === Scrollbar === */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) var(--bg-surface);
+}
+
+/* === Utility Classes === */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-success {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-danger {
+  color: var(--danger);
+}

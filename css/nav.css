@@ -1,0 +1,298 @@
+/* ========================================
+   Navigation Component - 4-View Ecosystem
+   ======================================== */
+
+/* === Main Navigation Container === */
+
+.view-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--bg-elevated);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--border-subtle);
+
+  /* Center in header */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* === Navigation Button === */
+
+.view-nav__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.view-nav__btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.view-nav__btn:active {
+  transform: scale(0.98);
+}
+
+/* Active State */
+.view-nav__btn--active {
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.view-nav__btn--active:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface);
+}
+
+.view-nav__btn--active .view-nav__icon {
+  opacity: 1;
+  color: var(--primary);
+}
+
+/* === Icon === */
+
+.view-nav__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: all var(--transition-fast);
+}
+
+.view-nav__btn:hover .view-nav__icon {
+  opacity: 1;
+}
+
+/* === Text Label === */
+
+.view-nav__text {
+  font-weight: var(--font-semibold);
+  letter-spacing: -0.01em;
+}
+
+/* === Keyboard Shortcut Indicator === */
+
+.view-nav__shortcut {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  opacity: 0.6;
+  margin-left: var(--space-1);
+}
+
+/* Show shortcuts on hover (desktop only) */
+@media (hover: hover) and (min-width: 900px) {
+  .view-nav__btn:hover .view-nav__shortcut {
+    display: inline;
+  }
+}
+
+/* === Responsive Behavior === */
+
+/* Medium screens - stay centered but compact */
+@media (max-width: 1100px) {
+  .view-nav__btn {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+/* === Mobile Nav Trigger (header button) === */
+.mobile-nav-trigger {
+  display: none; /* Hidden on desktop */
+}
+
+@media (max-width: 800px) {
+  /* Hide desktop nav */
+  .view-nav {
+    display: none;
+  }
+
+  /* Show mobile trigger - matches desktop nav pill style */
+  .mobile-nav-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--border-radius-lg);
+    cursor: pointer;
+
+    /* Center in header */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: calc(var(--z-sticky) + 1);
+
+    /* Prevent double-tap zoom */
+    touch-action: manipulation;
+  }
+
+  /* Inner icon box - matches active nav button style */
+  .mobile-nav-trigger__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: var(--bg-surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    color: var(--primary);
+  }
+
+  .mobile-nav-trigger__icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .mobile-nav-trigger__chevron {
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid var(--text-muted);
+    border-bottom: 2px solid var(--text-muted);
+    transform: rotate(45deg);
+    transition: transform 0.2s ease;
+    margin: 0 var(--space-2);
+  }
+
+  /* Chevron flips when nav is expanded */
+  .mobile-nav-trigger--active .mobile-nav-trigger__chevron {
+    transform: rotate(-135deg);
+  }
+
+  /* === Nav: Hidden on mobile until expanded === */
+  .view-nav {
+    display: none;
+  }
+
+  .view-nav--expanded {
+    display: flex;
+    position: fixed;
+    top: calc(var(--header-height) + var(--space-2));
+    left: 50%;
+    z-index: calc(var(--z-modal) + 1);
+
+    /* Horizontal layout */
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    margin: 0;
+
+    /* Prevent overflow */
+    max-width: calc(100vw - var(--space-6));
+
+    /* Contained pill style - matches desktop */
+    background: var(--bg-elevated);
+    border-radius: var(--border-radius-xl);
+    border: 1px solid var(--border-default);
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+
+    /* Dynamic Island style morph animation */
+    animation: navExpand 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform-origin: center top;
+  }
+
+  @keyframes navExpand {
+    0% {
+      opacity: 0;
+      transform: translateX(-50%) scaleX(0.3) scaleY(0.5);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1.02) scaleY(1.02);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(-50%) scaleX(1) scaleY(1);
+    }
+  }
+
+  /* Mobile nav backdrop */
+  .mobile-nav-backdrop {
+    display: none;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1A2230;
+    backdrop-filter: blur(2px);
+    z-index: var(--z-modal);
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+  }
+
+  .mobile-nav-backdrop--active {
+    display: block;
+    opacity: 1;
+  }
+
+  .view-nav--expanded .view-nav__btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    border-radius: var(--border-radius);
+    background: transparent;
+    min-width: 52px;
+    touch-action: manipulation;
+  }
+
+  .view-nav--expanded .view-nav__btn:hover {
+    background: var(--bg-hover);
+  }
+
+  /* Active state - matches desktop pill highlight */
+  .view-nav--expanded .view-nav__btn--active {
+    color: var(--text-primary);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .view-nav--expanded .view-nav__btn--active:hover {
+    background: var(--bg-surface);
+  }
+
+  .view-nav--expanded .view-nav__btn--active .view-nav__icon {
+    color: var(--primary);
+    opacity: 1;
+  }
+
+  .view-nav--expanded .view-nav__text {
+    display: block;
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+
+  .view-nav--expanded .view-nav__icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+  }
+
+  .view-nav--expanded .view-nav__btn:hover .view-nav__icon,
+  .view-nav--expanded .view-nav__btn--active .view-nav__icon {
+    opacity: 1;
+  }
+}
