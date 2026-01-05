@@ -12,6 +12,10 @@ class EquityChart {
     this.container = null;
     this.emptyState = null;
     this.dpr = window.devicePixelRatio || 1;
+    this.tooltip = null;
+    this.chartData = null;
+    this.chartScales = null;
+    this.chartPadding = null;
 
     // Chart colors
     this.colors = {
@@ -22,7 +26,8 @@ class EquityChart {
       loss: '#ef4444',       // Danger red
       grid: 'rgba(255, 255, 255, 0.05)',
       text: '#64748b',       // Muted text
-      axis: '#2a3545'        // Border subtle
+      axis: '#2a3545',       // Border subtle
+      tooltip: 'rgba(0, 0, 0, 0.9)'
     };
 
     // Light theme colors (applied via CSS custom properties check)
@@ -34,7 +39,8 @@ class EquityChart {
       loss: '#dc2626',
       grid: 'rgba(0, 0, 0, 0.03)',
       text: '#64748b',
-      axis: '#e2e8f0'
+      axis: '#e2e8f0',
+      tooltip: 'rgba(0, 0, 0, 0.85)'
     };
   }
 
@@ -53,6 +59,10 @@ class EquityChart {
 
     // Handle resize
     window.addEventListener('resize', () => this.resize());
+
+    // Handle mouse events for tooltip
+    this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+    this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
 
     // Listen for view changes to render
     state.on('viewChanged', (data) => {
@@ -154,6 +164,11 @@ class EquityChart {
 
     const scaleX = (date) => padding.left + ((date - minDate) / dateRange) * chartWidth;
     const scaleY = (value) => padding.top + chartHeight - ((value - paddedMin) / paddedRange) * chartHeight;
+
+    // Store data and scales for tooltip
+    this.chartData = data;
+    this.chartScales = { scaleX, scaleY };
+    this.chartPadding = padding;
 
     // Draw grid lines
     this.drawGrid(padding, chartWidth, chartHeight, paddedMin, paddedMax, colors);
@@ -269,64 +284,21 @@ class EquityChart {
 
     this.ctx.fillStyle = colors.text;
     this.ctx.font = '11px Inter, sans-serif';
-    this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'top';
 
     const y = padding.top + chartHeight + 8;
 
-    // Determine how many labels to show based on available width
-    const labelWidth = 80; // Approximate width needed per label
-    const maxLabels = Math.max(2, Math.floor(chartWidth / labelWidth));
-    const labelCount = Math.min(maxLabels, data.length);
+    // Only show start and end dates
+    const startPoint = data[0];
+    const endPoint = data[data.length - 1];
 
-    // Calculate step size
-    const step = Math.max(1, Math.ceil((data.length - 1) / (labelCount - 1)));
+    // Draw start date (left-aligned)
+    this.ctx.textAlign = 'left';
+    this.ctx.fillText(this.formatDate(startPoint.date), scaleX(startPoint.date), y);
 
-    // Build indices to show, filtering out duplicate dates
-    const indicesToShow = [];
-    const shownDates = new Set();
-
-    // Always show first
-    indicesToShow.push(0);
-    shownDates.add(this.formatDate(data[0].date));
-
-    // Add intermediate labels
-    for (let i = step; i < data.length - 1; i += step) {
-      const dateLabel = this.formatDate(data[i].date);
-      if (!shownDates.has(dateLabel)) {
-        indicesToShow.push(i);
-        shownDates.add(dateLabel);
-      }
-    }
-
-    // Always show last if different from previous
-    const lastIndex = data.length - 1;
-    const lastDateLabel = this.formatDate(data[lastIndex].date);
-    if (!shownDates.has(lastDateLabel)) {
-      const previousIndex = indicesToShow[indicesToShow.length - 1];
-      // Only add if far enough, otherwise replace previous
-      if (lastIndex - previousIndex >= step * 0.6) {
-        indicesToShow.push(lastIndex);
-      } else {
-        indicesToShow[indicesToShow.length - 1] = lastIndex;
-      }
-    }
-
-    // Draw labels
-    indicesToShow.forEach((index, i) => {
-      const point = data[index];
-      const x = scaleX(point.date);
-      const label = this.formatDate(point.date);
-
-      // Left-align first label to prevent overlap with y-axis
-      if (i === 0) {
-        this.ctx.textAlign = 'left';
-        this.ctx.fillText(label, x, y);
-        this.ctx.textAlign = 'center';
-      } else {
-        this.ctx.fillText(label, x, y);
-      }
-    });
+    // Draw end date (right-aligned)
+    this.ctx.textAlign = 'right';
+    this.ctx.fillText(this.formatDate(endPoint.date), scaleX(endPoint.date), y);
   }
 
   formatDate(timestamp) {
@@ -352,6 +324,111 @@ class EquityChart {
       return '$' + (value / 1000).toFixed(1) + 'k';
     }
     return '$' + value.toFixed(0);
+  }
+
+  formatCurrencyFull(value) {
+    return '$' + value.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  formatDateFull(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }
+
+  handleMouseMove(e) {
+    if (!this.chartData || !this.chartScales || !this.chartPadding) return;
+
+    const rect = this.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Find closest data point
+    const { scaleX, scaleY } = this.chartScales;
+    let closestPoint = null;
+    let minDistance = Infinity;
+
+    for (const point of this.chartData) {
+      const px = scaleX(point.date);
+      const py = scaleY(point.balance);
+      const distance = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestPoint = { ...point, px, py };
+      }
+    }
+
+    // Show tooltip if close enough (within 30px)
+    if (closestPoint && minDistance < 30) {
+      this.showTooltip(closestPoint, x, y);
+      this.canvas.style.cursor = 'pointer';
+    } else {
+      this.hideTooltip();
+      this.canvas.style.cursor = 'default';
+    }
+  }
+
+  handleMouseLeave() {
+    this.hideTooltip();
+    this.canvas.style.cursor = 'default';
+  }
+
+  showTooltip(point, mouseX, mouseY) {
+    if (!this.tooltip) {
+      this.tooltip = document.createElement('div');
+      this.tooltip.style.position = 'absolute';
+      this.tooltip.style.background = this.getColors().tooltip;
+      this.tooltip.style.color = 'white';
+      this.tooltip.style.padding = '8px 12px';
+      this.tooltip.style.borderRadius = '6px';
+      this.tooltip.style.fontSize = '12px';
+      this.tooltip.style.fontFamily = 'Inter, sans-serif';
+      this.tooltip.style.pointerEvents = 'none';
+      this.tooltip.style.zIndex = '1000';
+      this.tooltip.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+      this.tooltip.style.whiteSpace = 'nowrap';
+      this.container.appendChild(this.tooltip);
+    }
+
+    this.tooltip.innerHTML = `
+      <div style="font-weight: 600; margin-bottom: 4px;">${this.formatCurrencyFull(point.balance)}</div>
+      <div style="font-size: 11px; opacity: 0.9;">${this.formatDateFull(point.date)}</div>
+    `;
+
+    // Position tooltip
+    const rect = this.container.getBoundingClientRect();
+    const tooltipRect = this.tooltip.getBoundingClientRect();
+
+    let left = mouseX + 15;
+    let top = mouseY - tooltipRect.height / 2;
+
+    // Keep tooltip within bounds
+    if (left + tooltipRect.width > rect.width) {
+      left = mouseX - tooltipRect.width - 15;
+    }
+    if (top < 0) {
+      top = 0;
+    }
+    if (top + tooltipRect.height > rect.height) {
+      top = rect.height - tooltipRect.height;
+    }
+
+    this.tooltip.style.left = left + 'px';
+    this.tooltip.style.top = top + 'px';
+    this.tooltip.style.display = 'block';
+  }
+
+  hideTooltip() {
+    if (this.tooltip) {
+      this.tooltip.style.display = 'none';
+    }
   }
 
   showEmptyState(show) {
