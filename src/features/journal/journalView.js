@@ -836,11 +836,9 @@ class JournalView {
         </div>
         ` : ''}
         <div class="journal-row-details__actions">
-          ${isActive ? `
-            <button class="btn btn--sm btn--primary" data-action="close" data-id="${trade.id}">
-              Edit
-            </button>
-          ` : ''}
+          <button class="btn btn--sm btn--primary" data-action="close" data-id="${trade.id}">
+            Edit
+          </button>
           <button class="btn btn--sm btn--ghost" data-action="delete" data-id="${trade.id}">Delete</button>
         </div>
       </div>

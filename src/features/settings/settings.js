@@ -21,15 +21,42 @@ class Settings {
     this.loadAndApply();
 
     // Listen for account changes
-    state.on('accountSizeChanged', (size) => this.updateAccountDisplay(size));
+    state.on('accountSizeChanged', (size) => {
+      const unrealizedPnL = this.updateAccountDisplay(size);
+      this.updateSummary(unrealizedPnL);
+    });
 
     // Listen for price updates to refresh header with unrealized P&L
-    state.on('pricesUpdated', () => this.updateAccountDisplay(state.account.currentSize));
+    state.on('pricesUpdated', () => {
+      const unrealizedPnL = this.updateAccountDisplay(state.account.currentSize);
+      this.updateSummary(unrealizedPnL);
+    });
 
     // Listen for journal changes to refresh unrealized P&L
-    state.on('journalEntryAdded', () => this.updateAccountDisplay(state.account.currentSize));
-    state.on('journalEntryUpdated', () => this.updateAccountDisplay(state.account.currentSize));
-    state.on('journalEntryDeleted', () => this.updateAccountDisplay(state.account.currentSize));
+    state.on('journalEntryAdded', () => {
+      const unrealizedPnL = this.updateAccountDisplay(state.account.currentSize);
+      this.updateSummary(unrealizedPnL);
+    });
+    state.on('journalEntryUpdated', () => {
+      const unrealizedPnL = this.updateAccountDisplay(state.account.currentSize);
+      this.updateSummary(unrealizedPnL);
+    });
+    state.on('journalEntryDeleted', () => {
+      const unrealizedPnL = this.updateAccountDisplay(state.account.currentSize);
+      this.updateSummary(unrealizedPnL);
+    });
+
+    // Listen for cash flow changes
+    state.on('cashFlowChanged', () => {
+      const unrealizedPnL = this.updateAccountDisplay(state.account.currentSize);
+      this.updateSummary(unrealizedPnL);
+    });
+
+    // Listen for settings changes (starting account size)
+    state.on('settingsChanged', () => {
+      const unrealizedPnL = this.updateAccountDisplay(state.account.currentSize);
+      this.updateSummary(unrealizedPnL);
+    });
   }
 
   cacheElements() {
@@ -72,6 +99,8 @@ class Settings {
       // Summary
       summaryStarting: document.getElementById('summaryStarting'),
       summaryPnL: document.getElementById('summaryPnL'),
+      summaryUnrealized: document.getElementById('summaryUnrealized'),
+      summaryCashFlow: document.getElementById('summaryCashFlow'),
       summaryCurrent: document.getElementById('summaryCurrent'),
 
       // Main calculator inputs
@@ -458,19 +487,43 @@ class Settings {
     state.setUI('settingsOpen', false);
   }
 
-  updateSummary() {
+  updateSummary(cachedUnrealizedPnL = null) {
     const starting = state.settings.startingAccountSize;
-    const pnl = state.account.realizedPnL;
-    const current = starting + pnl;
+    const realizedPnL = state.account.realizedPnL;
+    const cashFlow = state.getCashFlowNet();
+
+    // Use cached unrealized P&L if provided, otherwise calculate
+    let unrealizedPnL = 0;
+    if (cachedUnrealizedPnL !== null) {
+      unrealizedPnL = cachedUnrealizedPnL;
+    } else {
+      const allOpenTrades = state.journal.entries.filter(e => e.status === 'open' || e.status === 'trimmed');
+      const unrealizedPnLData = priceTracker.calculateTotalUnrealizedPnL(allOpenTrades);
+      unrealizedPnL = unrealizedPnLData?.totalPnL || 0;
+    }
+
+    const current = starting + realizedPnL + unrealizedPnL + cashFlow;
 
     if (this.elements.summaryStarting) {
       this.elements.summaryStarting.textContent = formatCurrency(starting);
     }
 
     if (this.elements.summaryPnL) {
-      this.elements.summaryPnL.textContent = (pnl >= 0 ? '+' : '') + formatCurrency(pnl);
+      this.elements.summaryPnL.textContent = (realizedPnL >= 0 ? '+' : '') + formatCurrency(realizedPnL);
       this.elements.summaryPnL.className = 'account-summary__value ' +
-        (pnl >= 0 ? 'account-summary__value--success' : 'account-summary__value--danger');
+        (realizedPnL >= 0 ? 'account-summary__value--success' : 'account-summary__value--danger');
+    }
+
+    if (this.elements.summaryUnrealized) {
+      this.elements.summaryUnrealized.textContent = (unrealizedPnL >= 0 ? '+' : '') + formatCurrency(unrealizedPnL);
+      this.elements.summaryUnrealized.className = 'account-summary__value ' +
+        (unrealizedPnL >= 0 ? 'account-summary__value--success' : 'account-summary__value--danger');
+    }
+
+    if (this.elements.summaryCashFlow) {
+      this.elements.summaryCashFlow.textContent = (cashFlow >= 0 ? '+' : '') + formatCurrency(cashFlow);
+      this.elements.summaryCashFlow.className = 'account-summary__value ' +
+        (cashFlow >= 0 ? 'account-summary__value--success' : 'account-summary__value--danger');
     }
 
     if (this.elements.summaryCurrent) {
@@ -479,12 +532,18 @@ class Settings {
   }
 
   updateAccountDisplay(size) {
+    // Calculate total account from components to avoid double-counting
+    const starting = state.settings.startingAccountSize;
+    const realizedPnL = state.account.realizedPnL;
+    const cashFlow = state.getCashFlowNet();
+
     // Get current unrealized P&L from open positions
     const allOpenTrades = state.journal.entries.filter(e => e.status === 'open' || e.status === 'trimmed');
-    const unrealizedPnL = priceTracker.calculateTotalUnrealizedPnL(allOpenTrades);
+    const unrealizedPnLData = priceTracker.calculateTotalUnrealizedPnL(allOpenTrades);
+    const unrealizedPnL = unrealizedPnLData?.totalPnL || 0;
 
-    // Include unrealized P&L in display
-    const totalAccount = size + (unrealizedPnL?.totalPnL || 0);
+    // Calculate total: starting + realized + unrealized + cash flow
+    const totalAccount = starting + realizedPnL + unrealizedPnL + cashFlow;
 
     if (this.elements.headerAccountValue) {
       const newText = formatCurrency(totalAccount);
@@ -497,6 +556,9 @@ class Settings {
     if (this.elements.accountSize) {
       this.elements.accountSize.value = formatWithCommas(totalAccount);
     }
+
+    // Return unrealized P&L to avoid recalculating in updateSummary
+    return unrealizedPnL;
   }
 
   flashHeaderAccount() {
