@@ -21,6 +21,7 @@ class Journal {
   init() {
     this.cacheElements();
     this.bindEvents();
+    this.initNotesEditor();
     this.render();
 
     // Listen for state changes
@@ -48,6 +49,72 @@ class Journal {
     state.on('viewChanged', (data) => {
       if (data.to === 'dashboard') {
         this.hasAnimated = false;
+      }
+    });
+  }
+
+  initNotesEditor() {
+    // Auto-convert "- " to bullet points (same as wizard notes)
+    if (!this.elements.tradeNotes) return;
+
+    this.elements.tradeNotes.addEventListener('input', (e) => {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      const textNode = range.startContainer;
+
+      // Only work with text nodes
+      if (textNode.nodeType !== Node.TEXT_NODE) return;
+
+      const textContent = textNode.textContent;
+      const cursorPos = range.startOffset;
+
+      // Check if the text just before cursor is "- " (support both regular space and &nbsp;)
+      if (cursorPos >= 2) {
+        const substringToCheck = textContent.substring(cursorPos - 2, cursorPos);
+        const isDash = substringToCheck[0] === '-';
+        const isSpace = substringToCheck[1] === ' ' || substringToCheck[1] === '\u00A0'; // Regular space or &nbsp;
+
+        if (isDash && isSpace) {
+        const beforeDash = textContent.substring(0, cursorPos - 2);
+        const afterDash = textContent.substring(cursorPos);
+        const combinedText = beforeDash + afterDash;
+
+        // Create a proper list structure
+        const ul = document.createElement('ul');
+        const li = document.createElement('li');
+
+        if (combinedText) {
+          li.textContent = combinedText;
+        } else {
+          li.innerHTML = '<br>';
+        }
+
+        ul.appendChild(li);
+
+        // Replace content with list
+        const parent = textNode.parentNode;
+        if (parent === this.elements.tradeNotes) {
+          this.elements.tradeNotes.replaceChild(ul, textNode);
+        } else {
+          parent.parentNode.replaceChild(ul, parent);
+        }
+
+        // Set cursor in the li
+        const newRange = document.createRange();
+        const newSelection = window.getSelection();
+
+        if (li.firstChild) {
+          newRange.setStart(li.firstChild, combinedText.length);
+        } else {
+          newRange.setStart(li, 0);
+        }
+
+        newRange.collapse(true);
+        newSelection.removeAllRanges();
+        newSelection.addRange(newRange);
+        }
       }
     });
   }
@@ -217,7 +284,7 @@ class Journal {
       riskDollars: results.riskDollars,
       riskPercent: state.account.riskPercent,
       stopDistance: results.stopDistance,
-      notes: this.elements.tradeNotes?.value || '',
+      notes: this.elements.tradeNotes?.innerHTML.trim() || '',
       status: 'open',
       exitPrice: null,
       exitDate: null,
@@ -258,7 +325,7 @@ class Journal {
 
     // Clear notes
     if (this.elements.tradeNotes) {
-      this.elements.tradeNotes.value = '';
+      this.elements.tradeNotes.innerHTML = '';
     }
 
     showToast(`✅ ${entry.ticker} trade logged!`, 'success');

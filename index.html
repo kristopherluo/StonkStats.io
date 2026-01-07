@@ -574,13 +574,13 @@
             </div>
             <div class="card__body">
               <div class="input-group">
-                <label class="input-label" for="tradeNotes">📝 Quick note <span class="label-optional">(Recommended)</span></label>
-                <textarea
-                  class="input input--textarea"
+                <label class="input-label" for="tradeNotes">Quick note <span class="label-optional">(Recommended)</span></label>
+                <div
                   id="tradeNotes"
+                  class="trade-notes-editable"
+                  contenteditable="true"
                   placeholder="Setup? Theme? Entry tactic?"
-                  rows="2"
-                ></textarea>
+                ></div>
               </div>
               <button class="btn btn--success btn--full" id="logTradeBtn" disabled>
                 Save to Journal
@@ -1417,7 +1417,7 @@
             Twelve Data API Key
             <span class="tooltip">
               <span class="tooltip__icon">?</span>
-              <span class="tooltip__content">Get a free API key at <a href="https://twelvedata.com/pricing" target="_blank" style="color: var(--color-primary);">twelvedata.com</a>. Used for historical price charts and company summaries in the Journal. Enables chart viewing when opening journal entries. (800 calls/day on free tier)</span>
+              <span class="tooltip__content">Get a free API key at <a href="https://twelvedata.com/pricing" target="_blank" style="color: var(--color-primary);">twelvedata.com</a>. Used for historical price charts in the Journal. Enables chart viewing when opening journal entries. (800 calls/day on free tier)</span>
             </span>
           </label>
           <div class="input-with-btn">
@@ -1428,6 +1428,25 @@
               placeholder="Paste your Twelve Data API key here"
             >
             <button class="btn btn--primary" id="twelveDataApiKeyBtn">Use Key</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label class="input-label" for="alphaVantageApiKey">
+            Alpha Vantage API Key
+            <span class="tooltip">
+              <span class="tooltip__icon">?</span>
+              <span class="tooltip__content">Get a free API key at <a href="https://www.alphavantage.co/support/#api-key" target="_blank" style="color: var(--color-primary);">alphavantage.co</a>. Used for company descriptions in the Journal. (25 calls/day, 5 calls/minute on free tier)</span>
+            </span>
+          </label>
+          <div class="input-with-btn">
+            <input
+              type="text"
+              class="input input--mono"
+              id="alphaVantageApiKey"
+              placeholder="Paste your Alpha Vantage API key here"
+            >
+            <button class="btn btn--primary" id="alphaVantageApiKeyBtn">Use Key</button>
           </div>
         </div>
       </div>
@@ -1717,16 +1736,11 @@
       <div class="wizard-progress__connector"></div>
       <div class="wizard-progress__step" data-step="2">
         <span class="wizard-progress__number">2</span>
-        <span class="wizard-progress__label">Thesis</span>
+        <span class="wizard-progress__label">Strategy</span>
       </div>
       <div class="wizard-progress__connector"></div>
       <div class="wizard-progress__step" data-step="3">
         <span class="wizard-progress__number">3</span>
-        <span class="wizard-progress__label">Tactics</span>
-      </div>
-      <div class="wizard-progress__connector"></div>
-      <div class="wizard-progress__step" data-step="4">
-        <span class="wizard-progress__number">4</span>
         <span class="wizard-progress__label">Confirm</span>
       </div>
     </div>
@@ -1805,7 +1819,12 @@
           </div>
 
           <div class="input-group">
-            <label class="input-label">Conviction Level</label>
+            <label class="input-label">Notes</label>
+            <div id="wizardNotes" class="wizard-notes-editable" contenteditable="true" placeholder="Type notes..."></div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Conviction</label>
             <div class="wizard-conviction">
               <button class="wizard-star" data-conviction="1">★</button>
               <button class="wizard-star" data-conviction="2">★</button>
@@ -1823,43 +1842,8 @@
         </div>
       </div>
 
-      <!-- Step 3: Entry Tactics -->
+      <!-- Step 3: Confirmation -->
       <div class="wizard-step" data-step="3">
-        <div class="wizard-step__header">
-          <h3 class="wizard-step__title">How are you entering?</h3>
-          <p class="wizard-step__subtitle">Document your entry approach</p>
-        </div>
-
-        <div class="wizard-step__content">
-          <div class="input-group">
-            <label class="input-label">Entry Type</label>
-            <div class="wizard-btn-grid wizard-btn-grid--3">
-              <button class="wizard-option-btn" data-entry-type="market">Market</button>
-              <button class="wizard-option-btn" data-entry-type="limit">Limit</button>
-              <button class="wizard-option-btn" data-entry-type="scale">Scale-in</button>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label class="input-label" for="wizardRiskReasoning">Risk Reasoning</label>
-            <textarea class="input input--textarea" id="wizardRiskReasoning" rows="3" placeholder="Why is this stop level appropriate? e.g. Below VWAP support, Under key level..."></textarea>
-          </div>
-
-          <div class="input-group">
-            <label class="input-label" for="wizardNotes">Additional Notes</label>
-            <textarea class="input input--textarea" id="wizardNotes" rows="2" placeholder="Anything else about this trade..."></textarea>
-          </div>
-        </div>
-
-        <div class="wizard-step__actions">
-          <button class="btn btn--ghost" id="wizardBack3">Back</button>
-          <button class="btn btn--ghost" id="wizardSkip3">Skip</button>
-          <button class="btn btn--primary" id="wizardNext3">Next</button>
-        </div>
-      </div>
-
-      <!-- Step 4: Confirmation -->
-      <div class="wizard-step" data-step="4">
         <div class="wizard-step__header">
           <h3 class="wizard-step__title">Ready to log!</h3>
           <p class="wizard-step__subtitle">Review and confirm your trade</p>
@@ -1877,7 +1861,7 @@
               <span class="wizard-confirmation__label">Risk</span>
               <span class="wizard-confirmation__value wizard-confirmation__value--risk" id="wizardConfirmRisk">$0.00 (0%)</span>
             </div>
-            <div class="wizard-confirmation__row">
+            <div class="wizard-confirmation__row" id="wizardConfirmDateRow">
               <span class="wizard-confirmation__label">Date</span>
               <span class="wizard-confirmation__value" id="wizardConfirmDate">—</span>
             </div>
@@ -1907,7 +1891,7 @@
         </div>
 
         <div class="wizard-step__actions">
-          <button class="btn btn--ghost" id="wizardBack4">Back</button>
+          <button class="btn btn--ghost" id="wizardBack3">Back</button>
           <button class="btn btn--success btn--pulse" id="wizardConfirmBtn">✅ Log Trade</button>
         </div>
       </div>

@@ -3611,7 +3611,7 @@
 .wizard-confirmation__details {
   background: var(--bg-elevated);
   border-radius: var(--border-radius);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-4) var(--space-2) var(--space-4);
   border: 1px solid var(--border-default);
   margin-bottom: var(--space-4);
 }
@@ -3624,6 +3624,10 @@
 
 .wizard-confirmation__row:not(:last-child) {
   border-bottom: 1px solid var(--border-default);
+}
+
+#wizardConfirmDateRow {
+  border-bottom: none !important;
 }
 
 .wizard-confirmation__label {
@@ -3678,6 +3682,77 @@
 @keyframes streakFire {
   0%, 100% { transform: scale(1); filter: brightness(1); }
   50% { transform: scale(1.1); filter: brightness(1.2); }
+}
+
+/* Wizard Notes - Contenteditable */
+/* Quick Note Editable */
+.trade-notes-editable {
+  min-height: 60px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius);
+  background: var(--bg-surface);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  outline: none;
+  overflow-y: auto;
+  max-height: 150px;
+}
+
+.trade-notes-editable:focus {
+  border-color: var(--border-default);
+  background: var(--bg-elevated);
+}
+
+.trade-notes-editable:empty:before {
+  content: attr(placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.trade-notes-editable ul {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-5);
+}
+
+.trade-notes-editable li {
+  margin-bottom: var(--space-1);
+}
+
+/* Wizard Notes Editable */
+.wizard-notes-editable {
+  min-height: 100px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius);
+  background: var(--bg-surface);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  outline: none;
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.wizard-notes-editable:focus {
+  border-color: var(--border-default);
+  background: var(--bg-elevated);
+}
+
+.wizard-notes-editable:empty:before {
+  content: attr(placeholder);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.wizard-notes-editable ul {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-5);
+}
+
+.wizard-notes-editable li {
+  margin-bottom: var(--space-1);
 }
 
 /* Wizard Hint */

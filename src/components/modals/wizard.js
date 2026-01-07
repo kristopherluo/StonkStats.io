@@ -11,16 +11,14 @@ class TradeWizard {
   constructor() {
     this.elements = {};
     this.currentStep = 1;
-    this.totalSteps = 4;
+    this.totalSteps = 3;
     this.skippedSteps = [];
 
     // Thesis data collected during wizard
     this.thesis = {
       setupType: null,
       theme: null,
-      conviction: null,
-      entryType: null,
-      riskReasoning: null
+      conviction: null
     };
 
     this.notes = '';
@@ -29,6 +27,73 @@ class TradeWizard {
   init() {
     this.cacheElements();
     this.bindEvents();
+    this.initNotesEditor();
+  }
+
+  initNotesEditor() {
+    // Auto-convert "- " to bullet points (same as journal notes)
+    if (!this.elements.notesInput) return;
+
+    this.elements.notesInput.addEventListener('input', (e) => {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      const textNode = range.startContainer;
+
+      // Only work with text nodes
+      if (textNode.nodeType !== Node.TEXT_NODE) return;
+
+      const textContent = textNode.textContent;
+      const cursorPos = range.startOffset;
+
+      // Check if the text just before cursor is "- " (support both regular space and &nbsp;)
+      if (cursorPos >= 2) {
+        const substringToCheck = textContent.substring(cursorPos - 2, cursorPos);
+        const isDash = substringToCheck[0] === '-';
+        const isSpace = substringToCheck[1] === ' ' || substringToCheck[1] === '\u00A0'; // Regular space or &nbsp;
+
+        if (isDash && isSpace) {
+        const beforeDash = textContent.substring(0, cursorPos - 2);
+        const afterDash = textContent.substring(cursorPos);
+        const combinedText = beforeDash + afterDash;
+
+        // Create a proper list structure
+        const ul = document.createElement('ul');
+        const li = document.createElement('li');
+
+        if (combinedText) {
+          li.textContent = combinedText;
+        } else {
+          li.innerHTML = '<br>';
+        }
+
+        ul.appendChild(li);
+
+        // Replace content with list
+        const parent = textNode.parentNode;
+        if (parent === this.elements.notesInput) {
+          this.elements.notesInput.replaceChild(ul, textNode);
+        } else {
+          parent.parentNode.replaceChild(ul, parent);
+        }
+
+        // Set cursor in the li
+        const newRange = document.createRange();
+        const newSelection = window.getSelection();
+
+        if (li.firstChild) {
+          newRange.setStart(li.firstChild, combinedText.length);
+        } else {
+          newRange.setStart(li, 0);
+        }
+
+        newRange.collapse(true);
+        newSelection.removeAllRanges();
+        newSelection.addRange(newRange);
+        }
+      }
+    });
   }
 
   cacheElements() {
@@ -61,19 +126,12 @@ class TradeWizard {
       setupBtns: document.querySelectorAll('[data-setup]'),
       themeInput: document.getElementById('wizardTheme'),
       convictionStars: document.querySelectorAll('.wizard-star'),
+      notesInput: document.getElementById('wizardNotes'),
       back2Btn: document.getElementById('wizardBack2'),
       skip2Btn: document.getElementById('wizardSkip2'),
       next2Btn: document.getElementById('wizardNext2'),
 
-      // Step 3 - Entry Tactics
-      entryTypeBtns: document.querySelectorAll('[data-entry-type]'),
-      riskReasoningInput: document.getElementById('wizardRiskReasoning'),
-      notesInput: document.getElementById('wizardNotes'),
-      back3Btn: document.getElementById('wizardBack3'),
-      skip3Btn: document.getElementById('wizardSkip3'),
-      next3Btn: document.getElementById('wizardNext3'),
-
-      // Step 4 - Confirmation
+      // Step 3 - Confirmation
       confirmTicker: document.getElementById('wizardConfirmTicker'),
       confirmPosition: document.getElementById('wizardConfirmPosition'),
       confirmRisk: document.getElementById('wizardConfirmRisk'),
@@ -82,11 +140,9 @@ class TradeWizard {
       confirmSetup: document.getElementById('wizardConfirmSetup'),
       confirmThemeRow: document.getElementById('wizardConfirmThemeRow'),
       confirmTheme: document.getElementById('wizardConfirmTheme'),
-      confirmEntryTypeRow: document.getElementById('wizardConfirmEntryTypeRow'),
-      confirmEntryType: document.getElementById('wizardConfirmEntryType'),
       streakDisplay: document.getElementById('wizardStreakDisplay'),
       streakText: document.getElementById('wizardStreakText'),
-      back4Btn: document.getElementById('wizardBack4'),
+      back3Btn: document.getElementById('wizardBack3'),
       confirmBtn: document.getElementById('wizardConfirmBtn'),
 
       // Confetti
@@ -104,6 +160,10 @@ class TradeWizard {
       if (!this.isOpen()) return;
       if (e.key === 'Escape') this.close();
       if (e.key === 'Enter' && !e.shiftKey) {
+        // Don't trigger next step if user is typing in the notes editor
+        const isInNotesEditor = e.target.closest('.wizard-notes-editable');
+        if (isInNotesEditor) return;
+
         e.preventDefault();
         this.nextStep();
       }
@@ -124,11 +184,6 @@ class TradeWizard {
 
     // Step 3 buttons
     this.elements.back3Btn?.addEventListener('click', () => this.goToStep(2));
-    this.elements.skip3Btn?.addEventListener('click', () => this.skipStep(3));
-    this.elements.next3Btn?.addEventListener('click', () => this.goToStep(4));
-
-    // Step 4 buttons
-    this.elements.back4Btn?.addEventListener('click', () => this.goToStep(3));
     this.elements.confirmBtn?.addEventListener('click', () => this.confirmTrade());
 
     // Setup type buttons
@@ -137,15 +192,6 @@ class TradeWizard {
         this.elements.setupBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.thesis.setupType = btn.dataset.setup;
-      });
-    });
-
-    // Entry type buttons
-    this.elements.entryTypeBtns?.forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.elements.entryTypeBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        this.thesis.entryType = btn.dataset.entryType;
       });
     });
 
@@ -183,9 +229,7 @@ class TradeWizard {
     this.thesis = {
       setupType: null,
       theme: null,
-      conviction: null,
-      entryType: null,
-      riskReasoning: null
+      conviction: null
     };
     this.notes = '';
 
@@ -213,13 +257,16 @@ class TradeWizard {
   resetForm() {
     // Reset buttons
     this.elements.setupBtns?.forEach(b => b.classList.remove('active'));
-    this.elements.entryTypeBtns?.forEach(b => b.classList.remove('active'));
     this.elements.convictionStars?.forEach(s => s.classList.remove('active'));
 
     // Reset inputs
     if (this.elements.themeInput) this.elements.themeInput.value = '';
-    if (this.elements.riskReasoningInput) this.elements.riskReasoningInput.value = '';
-    if (this.elements.notesInput) this.elements.notesInput.value = '';
+
+    // Reset notes editor
+    if (this.elements.notesInput) {
+      this.elements.notesInput.innerHTML = '';
+    }
+    this.notes = '';
 
     // Reset progress
     this.elements.progressSteps?.forEach(step => {
@@ -281,7 +328,16 @@ class TradeWizard {
       this.elements.wizardTarget.textContent = trade.target ? formatCurrency(trade.target) : '—';
     }
 
-    // Step 4 confirmation - will be updated in updateConfirmation()
+    // Step 2 notes - pre-fill from Quick Note on dashboard
+    const quickNoteEl = document.getElementById('tradeNotes');
+    if (this.elements.notesInput && quickNoteEl) {
+      const quickNoteContent = quickNoteEl.innerHTML.trim();
+      if (quickNoteContent) {
+        this.elements.notesInput.innerHTML = quickNoteContent;
+      }
+    }
+
+    // Step 3 confirmation - will be updated in updateConfirmation()
     if (this.elements.confirmTicker) {
       this.elements.confirmTicker.textContent = trade.ticker || 'No Ticker';
     }
@@ -326,8 +382,8 @@ class TradeWizard {
       }
     });
 
-    // Update confirmation on step 4
-    if (step === 4) {
+    // Update confirmation on step 3
+    if (step === 3) {
       this.updateConfirmation();
     }
   }
@@ -366,12 +422,10 @@ class TradeWizard {
     // Step 2 - Thesis
     if (this.currentStep === 2) {
       this.thesis.theme = this.elements.themeInput?.value.trim() || null;
-    }
-
-    // Step 3 - Entry Tactics
-    if (this.currentStep === 3) {
-      this.thesis.riskReasoning = this.elements.riskReasoningInput?.value.trim() || null;
-      this.notes = this.elements.notesInput?.value.trim() || '';
+      // Get notes from contenteditable div (store as HTML for formatting)
+      if (this.elements.notesInput) {
+        this.notes = this.elements.notesInput.innerHTML.trim() || '';
+      }
     }
   }
 
@@ -397,15 +451,6 @@ class TradeWizard {
       this.elements.confirmTheme.textContent = this.thesis.theme;
     } else {
       this.elements.confirmThemeRow.style.display = 'none';
-    }
-
-    // Update entry type row
-    if (this.thesis.entryType) {
-      this.elements.confirmEntryTypeRow.style.display = 'flex';
-      this.elements.confirmEntryType.textContent =
-        this.thesis.entryType.charAt(0).toUpperCase() + this.thesis.entryType.slice(1);
-    } else {
-      this.elements.confirmEntryTypeRow.style.display = 'none';
     }
 
     // Show streak preview
@@ -437,14 +482,23 @@ class TradeWizard {
     const results = state.results;
     const account = state.account;
 
-    // Validate ticker if API key is configured
+    // Validate ticker and fetch company data if API key is configured
+    let companyData = null;
     if (priceTracker.apiKey && trade.ticker) {
       try {
         // Show loading toast
         showToast('🔍 Validating ticker...', 'info');
 
-        // Attempt to fetch price to validate ticker
-        await priceTracker.fetchPrice(trade.ticker);
+        // Fetch price to validate ticker and company profile in parallel
+        const [priceData, profileData] = await Promise.all([
+          priceTracker.fetchPrice(trade.ticker),
+          priceTracker.fetchCompanyProfile(trade.ticker)
+        ]);
+
+        companyData = profileData;
+        if (companyData) {
+          console.log('[Wizard] Company data fetched:', companyData);
+        }
       } catch (error) {
         // If error contains "Invalid ticker", show specific error
         if (error.message.includes('Invalid ticker')) {
@@ -483,11 +537,8 @@ class TradeWizard {
       wizardSkipped: [...this.skippedSteps],
 
       // Company data (fetched during validation)
-      company: state.tempCompanyData || null
+      company: companyData || null
     };
-
-    // Clear temp company data
-    delete state.tempCompanyData;
 
     // Add to journal
     const newEntry = state.addJournalEntry(entry);
@@ -531,9 +582,7 @@ class TradeWizard {
   hasThesisData() {
     return this.thesis.setupType ||
            this.thesis.theme ||
-           this.thesis.conviction ||
-           this.thesis.entryType ||
-           this.thesis.riskReasoning;
+           this.thesis.conviction;
   }
 
   showSuccessToast() {

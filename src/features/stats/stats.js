@@ -364,15 +364,16 @@ class Stats {
     const unrealizedPnL = priceTracker.calculateTotalUnrealizedPnL(allOpenTrades);
 
     const startingAccount = settings.startingAccountSize;
-    const currentAccount = account.currentSize + (unrealizedPnL?.totalPnL || 0);
     const netCashFlow = state.getCashFlowNet();
 
+    // Calculate current account value (includes trading P&L + cash flow)
+    const currentAccount = startingAccount + allTimePnL + (unrealizedPnL?.totalPnL || 0) + netCashFlow;
+
+    // Trading growth and total growth both measure trading performance (exclude cash flow)
     const tradingGrowth = startingAccount > 0
       ? ((allTimePnL + (unrealizedPnL?.totalPnL || 0)) / startingAccount) * 100
       : 0;
-    const totalGrowth = startingAccount > 0
-      ? ((currentAccount - startingAccount) / startingAccount) * 100
-      : 0;
+    const totalGrowth = tradingGrowth; // Total growth = trading growth (both exclude cash flow)
 
     this.stats = {
       openPositions: openTrades.length,
