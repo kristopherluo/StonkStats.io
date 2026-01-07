@@ -1532,6 +1532,15 @@
   border-bottom: none;
 }
 
+#appearanceSection,
+#accountDefaultsSection {
+  padding-bottom: var(--space-4);
+}
+
+#journalSettingsSection {
+  padding-bottom: var(--space-5);
+}
+
 .settings-section__title {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
@@ -1784,7 +1793,7 @@
 }
 
 .cash-flow-history {
-  margin-top: var(--space-4);
+  margin-top: var(--space-0.5);
 }
 
 .cash-flow-history__title {
