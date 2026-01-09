@@ -335,7 +335,7 @@ class TradeWizard {
 
     // Validate ticker (required)
     if (!ticker) {
-      showToast('❌ Ticker is required', 'error');
+      showToast('Ticker is required', 'error');
       this.elements.wizardTicker?.focus();
       return false;
     }
@@ -358,21 +358,21 @@ class TradeWizard {
 
     // Validate entry price (required)
     if (!entryPrice || isNaN(entryPrice) || entryPrice <= 0) {
-      showToast('❌ Entry price must be a valid number greater than 0', 'error');
+      showToast('Entry price must be a valid number greater than 0', 'error');
       this.elements.wizardEntryPrice?.focus();
       return false;
     }
 
     // Validate stop loss (required)
     if (!stopPrice || isNaN(stopPrice) || stopPrice <= 0) {
-      showToast('❌ Stop loss must be a valid number greater than 0', 'error');
+      showToast('Stop loss must be a valid number greater than 0', 'error');
       this.elements.wizardStopLoss?.focus();
       return false;
     }
 
     // Validate shares (required)
     if (!shares || isNaN(shares) || shares <= 0) {
-      showToast('❌ Shares must be a valid number greater than 0', 'error');
+      showToast('Shares must be a valid number greater than 0', 'error');
       this.elements.wizardShares?.focus();
       return false;
     }
@@ -381,7 +381,7 @@ class TradeWizard {
     if (targetPrice && targetPrice.length > 0) {
       const target = parseFloat(targetPrice);
       if (isNaN(target) || target <= 0) {
-        showToast('❌ Target price must be a valid number greater than 0', 'error');
+        showToast('Target price must be a valid number greater than 0', 'error');
         this.elements.wizardTargetPrice?.focus();
         return false;
       }
@@ -389,7 +389,7 @@ class TradeWizard {
 
     // Validate date (required)
     if (!tradeDate) {
-      showToast('❌ Trade date is required', 'error');
+      showToast('Trade date is required', 'error');
       this.elements.wizardTradeDate?.focus();
       return false;
     }
@@ -713,11 +713,11 @@ class TradeWizard {
 
   showSuccessToast() {
     const messages = [
-      "✅ Trade logged! Good luck!",
-      "🎯 Nice setup! Tracked.",
-      "🔥 You're on a roll! Trade saved.",
-      "📝 Disciplined trader! Logged.",
-      "✅ Trade captured! Let's go!"
+      "Trade logged! Good luck!",
+      "Nice setup! Tracked.",
+      "You're on a roll! Trade saved.",
+      "Disciplined trader! Logged.",
+      "Trade captured! Let's go!"
     ];
     const message = messages[Math.floor(Math.random() * messages.length)];
     showToast(message, 'success');

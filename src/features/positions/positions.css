@@ -48,8 +48,30 @@
 
 .positions-filter-section {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--space-6);
+  gap: var(--space-4);
+}
+
+.positions-filter-section__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.positions-filter-section__divider {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.positions-filter-section__right {
+  display: flex;
+  justify-content: flex-end;
 }
 
 

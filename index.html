@@ -134,7 +134,6 @@
           <span class="positions-risk-bar__label">Active</span>
           <span class="positions-risk-bar__value" id="positionsCount">0</span>
         </div>
-        <div class="positions-risk-bar__divider"></div>
         <button class="btn btn--primary positions-new-btn" id="positionsNewBtn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -146,7 +145,13 @@
 
       <!-- Filter Section -->
       <div class="positions-filter-section">
-        <div class="filter-dropdown">
+        <div class="positions-filter-section__left">
+          <span id="positionsStatusFilter">Status: All</span>
+          <span class="positions-filter-section__divider">|</span>
+          <span id="positionsTypeFilter">Type: All</span>
+        </div>
+        <div class="positions-filter-section__right">
+          <div class="filter-dropdown">
           <button class="filter-dropdown__btn" id="positionsFilterBtn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
@@ -213,6 +218,7 @@
           </div>
           <!-- Filter backdrop overlay -->
           <div class="filter-dropdown__backdrop" id="positionsFilterBackdrop"></div>
+          </div>
         </div>
       </div>
 
@@ -223,7 +229,6 @@
 
       <!-- Empty State -->
       <div class="positions-empty" id="positionsEmpty">
-        <span class="positions-empty__icon">🧘</span>
         <h2 class="positions-empty__title" id="positionsEmptyTitle">None Active</h2>
         <p class="positions-empty__text" id="positionsEmptyText">You're currently all cash. Click below to log a new trade.</p>
         <button class="btn btn--primary" id="positionsNewBtn2">Open Wizard</button>
@@ -232,19 +237,54 @@
 
     <!-- Journal View -->
     <section class="journal-view view--hidden" id="journalView">
-      <div class="journal-header">
-        <div class="journal-header__left">
-          <span class="journal-header__icon">📖</span>
-          <div>
-            <h1 class="journal-header__title">Trade Journal</h1>
-            <span class="journal-header__subtitle">
-              <span id="journalCount">0 trades</span>
-              <span class="journal-header__divider">|</span>
-              <span id="journalDateRange">All time</span>
-            </span>
-          </div>
+
+      <!-- Summary Bar -->
+      <div class="journal-summary-bar" id="journalSummaryBar">
+        <div class="journal-summary-bar__item journal-summary-bar__item--hero">
+          <span class="journal-summary-bar__label">Realized P&L</span>
+          <span class="journal-summary-bar__value journal-summary-bar__value--lg" id="journalTotalPnL">$0.00</span>
         </div>
-        <div class="journal-header__filters">
+        <div class="journal-summary-bar__item">
+          <span class="journal-summary-bar__label">Win Rate</span>
+          <span class="journal-summary-bar__value" id="journalWinRate">—</span>
+        </div>
+        <div class="journal-summary-bar__divider"></div>
+        <div class="journal-summary-bar__item">
+          <span class="journal-summary-bar__label">Wins</span>
+          <span class="journal-summary-bar__value journal-summary-bar__value--positive" id="journalWins">0</span>
+        </div>
+        <div class="journal-summary-bar__divider"></div>
+        <div class="journal-summary-bar__item">
+          <span class="journal-summary-bar__label">Losses</span>
+          <span class="journal-summary-bar__value journal-summary-bar__value--negative" id="journalLosses">0</span>
+        </div>
+        <div class="journal-summary-bar__divider"></div>
+        <div class="journal-summary-bar__item">
+          <span class="journal-summary-bar__label">Avg Win</span>
+          <span class="journal-summary-bar__value" id="journalAvgWin">—</span>
+        </div>
+        <div class="journal-summary-bar__divider"></div>
+        <div class="journal-summary-bar__item">
+          <span class="journal-summary-bar__label">Avg Loss</span>
+          <span class="journal-summary-bar__value" id="journalAvgLoss">—</span>
+        </div>
+        <div class="journal-summary-bar__divider"></div>
+        <div class="journal-summary-bar__item">
+          <span class="journal-summary-bar__label">Trades</span>
+          <span class="journal-summary-bar__value" id="journalCount">0</span>
+        </div>
+      </div>
+
+      <!-- Filters Section -->
+      <div class="journal-filter-section">
+        <div class="journal-filter-section__left">
+          <span id="journalStatusFilter">Status: All</span>
+          <span class="journal-filter-section__divider">|</span>
+          <span id="journalTypeFilter">Type: All</span>
+          <span class="journal-filter-section__divider">|</span>
+          <span id="journalDateRange">All time</span>
+        </div>
+        <div class="journal-filter-section__right">
           <div class="filter-dropdown">
             <button class="filter-dropdown__btn" id="journalFilterBtn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -276,7 +316,7 @@
                 <label class="filter-dropdown__section-title">Type</label>
                 <div class="filter-dropdown__options">
                   <label class="filter-checkbox">
-                    <input type="checkbox" id="journalAllTypesCheckbox">
+                    <input type="checkbox" id="journalAllTypesCheckbox" checked>
                     <span class="filter-checkbox__label">All Types</span>
                   </label>
                 </div>
@@ -338,38 +378,6 @@
         </div>
       </div>
 
-      <!-- Summary Bar -->
-      <div class="journal-summary-bar" id="journalSummaryBar">
-        <div class="journal-summary-bar__item journal-summary-bar__item--hero">
-          <span class="journal-summary-bar__label"><span class="journal-summary-bar__emoji">💰</span> Realized P&L</span>
-          <span class="journal-summary-bar__value journal-summary-bar__value--lg" id="journalTotalPnL">$0.00</span>
-        </div>
-        <div class="journal-summary-bar__item">
-          <span class="journal-summary-bar__label"><span class="journal-summary-bar__emoji">📈</span> Win Rate</span>
-          <span class="journal-summary-bar__value" id="journalWinRate">—</span>
-        </div>
-        <div class="journal-summary-bar__divider"></div>
-        <div class="journal-summary-bar__item">
-          <span class="journal-summary-bar__label"><span class="journal-summary-bar__emoji">🏆</span> Wins</span>
-          <span class="journal-summary-bar__value journal-summary-bar__value--positive" id="journalWins">0</span>
-        </div>
-        <div class="journal-summary-bar__divider"></div>
-        <div class="journal-summary-bar__item">
-          <span class="journal-summary-bar__label"><span class="journal-summary-bar__emoji">❌</span> Losses</span>
-          <span class="journal-summary-bar__value journal-summary-bar__value--negative" id="journalLosses">0</span>
-        </div>
-        <div class="journal-summary-bar__divider"></div>
-        <div class="journal-summary-bar__item">
-          <span class="journal-summary-bar__label"><span class="journal-summary-bar__emoji">🎯</span> Avg Win</span>
-          <span class="journal-summary-bar__value" id="journalAvgWin">—</span>
-        </div>
-        <div class="journal-summary-bar__divider"></div>
-        <div class="journal-summary-bar__item">
-          <span class="journal-summary-bar__label"><span class="journal-summary-bar__emoji">📉</span> Avg Loss</span>
-          <span class="journal-summary-bar__value" id="journalAvgLoss">—</span>
-        </div>
-      </div>
-
       <!-- Journal Table Container -->
       <div class="journal-table-container">
         <table class="journal-table" id="journalTable">
@@ -411,14 +419,6 @@
           </svg>
           Export CSV
         </button>
-        <button class="btn btn--secondary" id="journalExportTSV">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          Export TSV
-        </button>
       </div>
     </section>
 
@@ -426,7 +426,6 @@
     <section class="stats-view view--hidden" id="statsView">
       <div class="stats-header">
         <div class="stats-header__left">
-          <span class="stats-header__icon">📊</span>
           <div>
             <h1 class="stats-header__title">Trading Stats</h1>
             <span class="stats-header__subtitle" id="statsDateRange">All time</span>
@@ -482,7 +481,6 @@
       <!-- Trading Performance Section -->
       <div class="stats-section">
         <div class="stats-section__header">
-          <span class="stats-section__icon">📈</span>
           <h2 class="stats-section__title">Trading Performance</h2>
         </div>
         <div class="stats-grid">
@@ -512,7 +510,6 @@
       <!-- Account Growth Section -->
       <div class="stats-section">
         <div class="stats-section__header">
-          <span class="stats-section__icon">💰</span>
           <h2 class="stats-section__title">Account Growth</h2>
         </div>
         <div class="stats-grid">
@@ -550,7 +547,6 @@
             <canvas class="stats-chart__canvas" id="equityChartCanvas"></canvas>
             <!-- Empty state (shown when no data) -->
             <div class="stats-chart__empty" id="equityChartEmpty" style="display: none;">
-              <span class="stats-chart__empty-icon">📉</span>
               <span class="stats-chart__empty-text">Close some trades to see your equity curve</span>
             </div>
           </div>
@@ -786,7 +782,6 @@
       </div>
       <div class="modal__actions">
         <button class="btn btn--ghost btn--sm" id="journalCopyCSV">Copy CSV</button>
-        <button class="btn btn--ghost btn--sm" id="journalCopyTSV">Copy TSV</button>
         <button class="btn btn--ghost btn--sm" id="journalDownload">Download</button>
       </div>
     </div>
@@ -1247,21 +1242,18 @@
 
       <div class="clear-data__list">
         <div class="clear-data__item clear-data__item--danger">
-          <span class="clear-data__icon">📊</span>
           <div class="clear-data__details">
             <span class="clear-data__label">Trade Journal</span>
             <span class="clear-data__desc" id="clearDataTradeCount">All logged trades</span>
           </div>
         </div>
         <div class="clear-data__item clear-data__item--danger">
-          <span class="clear-data__icon">🏆</span>
           <div class="clear-data__details">
             <span class="clear-data__label">Achievements & Streaks</span>
             <span class="clear-data__desc" id="clearDataAchievementCount">All unlocked badges and progress</span>
           </div>
         </div>
         <div class="clear-data__item clear-data__item--danger">
-          <span class="clear-data__icon">⚙️</span>
           <div class="clear-data__details">
             <span class="clear-data__label">Account Settings</span>
             <span class="clear-data__desc">Account size, risk %, preferences</span>

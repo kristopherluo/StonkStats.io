@@ -15,7 +15,7 @@ class PositionsView {
     this.elements = {};
     this.filters = {
       status: 'all',
-      types: [] // Array of selected type strings
+      types: ['ep', 'long-term', 'base', 'breakout', 'bounce', 'other'] // Default to all types selected
     };
     this.autoRefreshInterval = null;
     this.hasAnimated = false;
@@ -63,6 +63,8 @@ class PositionsView {
     this.elements = {
       // Header
       positionsCount: document.getElementById('positionsCount'),
+      positionsStatusFilter: document.getElementById('positionsStatusFilter'),
+      positionsTypeFilter: document.getElementById('positionsTypeFilter'),
 
       // Risk bar
       riskBar: document.getElementById('positionsRiskBar'),
@@ -338,6 +340,9 @@ class PositionsView {
       this.elements.positionsCount.textContent = positions.length;
     }
 
+    // Update filter displays
+    this.updateFilterDisplays();
+
     // Render risk bar with filtered positions
     this.renderRiskBar(positions);
 
@@ -347,6 +352,38 @@ class PositionsView {
     } else {
       this.hideEmptyState();
       this.renderGrid(positions);
+    }
+  }
+
+  updateFilterDisplays() {
+    // Update status display
+    if (this.elements.positionsStatusFilter) {
+      const statusText = this.filters.status === 'all'
+        ? 'All'
+        : this.filters.status.charAt(0).toUpperCase() + this.filters.status.slice(1);
+      this.elements.positionsStatusFilter.textContent = `Status: ${statusText}`;
+    }
+
+    // Update type display
+    if (this.elements.positionsTypeFilter) {
+      const allTypes = ['ep', 'long-term', 'base', 'breakout', 'bounce', 'other'];
+      const typeLabels = {
+        'ep': 'EP',
+        'long-term': 'Long-term',
+        'base': 'Base',
+        'breakout': 'Breakout',
+        'bounce': 'Bounce',
+        'other': 'Other'
+      };
+
+      if (this.filters.types.length === allTypes.length) {
+        this.elements.positionsTypeFilter.textContent = 'Type: All';
+      } else if (this.filters.types.length === 0) {
+        this.elements.positionsTypeFilter.textContent = 'Type: None';
+      } else {
+        const typeNames = this.filters.types.map(t => typeLabels[t]).join(', ');
+        this.elements.positionsTypeFilter.textContent = `Type: ${typeNames}`;
+      }
     }
   }
 
@@ -664,13 +701,13 @@ class PositionsView {
       if (results.failed.length > 0) {
         console.error('Failed to fetch some prices:', results.failed);
         if (!isAutoRefresh) {
-          showToast(`⚠️ Failed to fetch ${results.failed.length} price${results.failed.length > 1 ? 's' : ''}`, 'warning');
+          showToast(`Failed to fetch ${results.failed.length} price${results.failed.length > 1 ? 's' : ''}`, 'warning');
         }
       }
     } catch (error) {
       console.error('Price refresh error:', error);
       if (!isAutoRefresh) {
-        showToast('❌ Failed to fetch prices: ' + error.message, 'error');
+        showToast('Failed to fetch prices: ' + error.message, 'error');
       }
     } finally {
       // Re-enable button if manual refresh

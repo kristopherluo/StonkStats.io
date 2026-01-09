@@ -131,7 +131,7 @@ class TrimModal {
   open(tradeId) {
     const trade = state.journal.entries.find(e => e.id === tradeId);
     if (!trade) {
-      showToast('❌ Trade not found', 'error');
+      showToast('Trade not found', 'error');
       return;
     }
 
@@ -558,17 +558,17 @@ class TrimModal {
       const newEntryDate = this.elements.entryDateInput?.value;
 
       if (isNaN(newEntry) || newEntry <= 0) {
-        showToast('⚠️ Please enter a valid entry price', 'error');
+        showToast('Please enter a valid entry price', 'error');
         return;
       }
 
       if (isNaN(newOriginalStop) || newOriginalStop <= 0) {
-        showToast('⚠️ Please enter a valid original stop', 'error');
+        showToast('Please enter a valid original stop', 'error');
         return;
       }
 
       if (!newEntryDate) {
-        showToast('⚠️ Please enter a valid entry date', 'error');
+        showToast('Please enter a valid entry date', 'error');
         return;
       }
 
@@ -642,7 +642,7 @@ class TrimModal {
       // Only move stop mode - no shares closed
       const newStopValue = parseFloat(this.elements.newStop?.value);
       if (isNaN(newStopValue) || newStopValue <= 0) {
-        showToast('⚠️ Enter a new stop', 'error');
+        showToast('Enter a new stop', 'error');
         return;
       }
 
@@ -653,7 +653,7 @@ class TrimModal {
       };
 
       state.updateJournalEntry(this.currentTrade.id, updates);
-      showToast(`✅ ${this.currentTrade.ticker} stop moved to ${formatCurrency(newStopValue)}`, 'success');
+      showToast(`${this.currentTrade.ticker} stop moved to ${formatCurrency(newStopValue)}`, 'success');
       this.close();
       return;
     }
@@ -665,7 +665,7 @@ class TrimModal {
       // Only change target mode - update target without closing shares
       const exitPrice = parseFloat(this.elements.exitPrice?.value);
       if (isNaN(exitPrice) || exitPrice <= 0) {
-        showToast('⚠️ Enter a target price', 'error');
+        showToast('Enter a target price', 'error');
         return;
       }
 
@@ -675,7 +675,7 @@ class TrimModal {
       };
 
       state.updateJournalEntry(this.currentTrade.id, updates);
-      showToast(`✅ ${this.currentTrade.ticker} target updated to ${formatCurrency(exitPrice)}`, 'success');
+      showToast(`${this.currentTrade.ticker} target updated to ${formatCurrency(exitPrice)}`, 'success');
       this.close();
       return;
     }
@@ -683,7 +683,7 @@ class TrimModal {
     // Normal trim/close mode
     const exitPrice = parseFloat(this.elements.exitPrice?.value);
     if (isNaN(exitPrice) || exitPrice <= 0) {
-      showToast('⚠️ Please enter a valid exit price', 'error');
+      showToast('Please enter a valid exit price', 'error');
       return;
     }
 
@@ -691,7 +691,7 @@ class TrimModal {
     const sharesToClose = Math.floor(remainingShares * (this.selectedTrimPercent / 100));
 
     if (sharesToClose <= 0) {
-      showToast('⚠️ No shares to close', 'error');
+      showToast('No shares to close', 'error');
       return;
     }
 
@@ -756,9 +756,8 @@ class TrimModal {
     }
 
     const actionText = isFullClose ? 'closed' : `trimmed ${this.selectedTrimPercent}%`;
-    const emoji = pnl >= 0 ? '✅' : '📉';
     showToast(
-      `${emoji} ${this.currentTrade.ticker} ${actionText}: ${pnl >= 0 ? '+' : ''}${formatCurrency(pnl)}`,
+      `${this.currentTrade.ticker} ${actionText}: ${pnl >= 0 ? '+' : ''}${formatCurrency(pnl)}`,
       pnl >= 0 ? 'success' : 'warning'
     );
 

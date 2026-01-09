@@ -392,7 +392,7 @@ class Calculator {
       this.renderEmptyResults();
       // Show target warning even with incomplete form
       if (hasTargetWarning) {
-        this.updateInsights([{ type: 'warning', icon: '⚠️', text: 'Target should be above entry for long trades' }]);
+        this.updateInsights([{ type: 'warning', text: 'Target should be above entry for long trades' }]);
       }
       return;
     }
@@ -401,7 +401,7 @@ class Calculator {
     if (stop >= entry) {
       this.setStopError(true);
       this.renderEmptyResults();
-      this.updateInsights([{ type: 'danger', icon: '⚠️', text: 'Stop must be below entry for long trades' }]);
+      this.updateInsights([{ type: 'danger', text: 'Stop must be below entry for long trades' }]);
       return;
     }
 
@@ -614,7 +614,6 @@ class Calculator {
     if (entry && stop) {
       insights.push({
         type: 'neutral',
-        icon: '📉',
         text: `Stop is ${formatPercent(stopDistance)} below entry`
       });
     }
@@ -624,13 +623,11 @@ class Calculator {
       if (target <= entry) {
         insights.push({
           type: 'warning',
-          icon: '⚠️',
           text: 'Target should be above entry for long trades'
         });
       } else {
         insights.push({
           type: 'success',
-          icon: '📈',
           text: `Target is ${formatPercent(targetDistance)} above entry`
         });
       }
@@ -639,7 +636,6 @@ class Calculator {
     if (isLimited) {
       insights.push({
         type: 'warning',
-        icon: '⚠️',
         text: `Position limited to ${state.account.maxPositionPercent}% of account`
       });
     }
@@ -653,7 +649,6 @@ class Calculator {
     if (!insights.length) {
       this.elements.tradeInsights.innerHTML = `
         <div class="insight insight--neutral">
-          <span class="insight__icon">📊</span>
           <span class="insight__text">Enter entry and stop to see insights</span>
         </div>
       `;
@@ -662,7 +657,6 @@ class Calculator {
 
     this.elements.tradeInsights.innerHTML = insights.map(i => `
       <div class="insight insight--${i.type}">
-        <span class="insight__icon">${i.icon || '📊'}</span>
         <span class="insight__text">${i.text}</span>
       </div>
     `).join('');

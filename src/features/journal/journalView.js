@@ -14,7 +14,7 @@ class JournalView {
     this.elements = {};
     this.filters = {
       status: 'all',
-      types: [], // Array of selected type strings
+      types: ['ep', 'long-term', 'base', 'breakout', 'bounce', 'other'], // Default to all types selected
       dateFrom: null,
       dateTo: null
     };
@@ -27,6 +27,13 @@ class JournalView {
   init() {
     this.cacheElements();
     this.bindEvents();
+
+    // Initialize all type checkboxes to be checked (matching "All Types" default state)
+    if (this.elements.typeCheckboxes) {
+      this.elements.typeCheckboxes.forEach(checkbox => {
+        checkbox.checked = true;
+      });
+    }
 
     // Initialize date inputs with gray styling since "All time" is default
     if (this.elements.dateFrom) this.elements.dateFrom.classList.add('preset-value');
@@ -57,6 +64,8 @@ class JournalView {
     this.elements = {
       // Header
       journalCount: document.getElementById('journalCount'),
+      journalStatusFilter: document.getElementById('journalStatusFilter'),
+      journalTypeFilter: document.getElementById('journalTypeFilter'),
 
       // Summary bar
       dateRange: document.getElementById('journalDateRange'),
@@ -573,8 +582,11 @@ class JournalView {
 
     // Update count to show filtered trades
     if (this.elements.journalCount) {
-      this.elements.journalCount.textContent = `${trades.length} trade${trades.length !== 1 ? 's' : ''}`;
+      this.elements.journalCount.textContent = trades.length;
     }
+
+    // Update filter displays
+    this.updateFilterDisplays();
 
     // Render summary bar with filtered trades
     this.renderSummary(trades);
@@ -585,6 +597,42 @@ class JournalView {
     } else {
       this.hideEmptyState();
       this.renderTable(trades);
+    }
+  }
+
+  updateFilterDisplays() {
+    // Update status display
+    if (this.elements.journalStatusFilter) {
+      const statusText = this.filters.status === 'all'
+        ? 'All'
+        : this.filters.status === 'winners'
+        ? 'Winners'
+        : this.filters.status === 'losers'
+        ? 'Losers'
+        : this.filters.status.charAt(0).toUpperCase() + this.filters.status.slice(1);
+      this.elements.journalStatusFilter.textContent = `Status: ${statusText}`;
+    }
+
+    // Update type display
+    if (this.elements.journalTypeFilter) {
+      const allTypes = ['ep', 'long-term', 'base', 'breakout', 'bounce', 'other'];
+      const typeLabels = {
+        'ep': 'EP',
+        'long-term': 'Long-term',
+        'base': 'Base',
+        'breakout': 'Breakout',
+        'bounce': 'Bounce',
+        'other': 'Other'
+      };
+
+      if (this.filters.types.length === allTypes.length) {
+        this.elements.journalTypeFilter.textContent = 'Type: All';
+      } else if (this.filters.types.length === 0) {
+        this.elements.journalTypeFilter.textContent = 'Type: None';
+      } else {
+        const typeNames = this.filters.types.map(t => typeLabels[t]).join(', ');
+        this.elements.journalTypeFilter.textContent = `Type: ${typeNames}`;
+      }
     }
   }
 
@@ -749,12 +797,25 @@ class JournalView {
         }
       }
 
+      // Determine exit price color
+      let exitPriceColor = '';
+      if (trade.exitPrice) {
+        const priceDiff = trade.exitPrice - trade.entry;
+        if (Math.abs(priceDiff) < 0.01) {
+          exitPriceColor = 'color: var(--text-primary);'; // Breakeven - white
+        } else if (priceDiff > 0) {
+          exitPriceColor = 'color: var(--success);'; // Green for profit
+        } else {
+          exitPriceColor = 'color: var(--danger);'; // Red for loss
+        }
+      }
+
       return `
         <tr class="journal-table__row ${shouldAnimate ? 'journal-row--animate' : ''} ${rowBgClass}" data-id="${trade.id}" style="${animationDelay}">
           <td>${formatDate(trade.timestamp)}</td>
           <td><strong>${trade.ticker}</strong></td>
-          <td>${formatCurrency(trade.entry)}</td>
-          <td>${trade.exitPrice ? formatCurrency(trade.exitPrice) : '—'}</td>
+          <td style="color: var(--primary);">${formatCurrency(trade.entry)}</td>
+          <td style="${exitPriceColor}">${trade.exitPrice ? formatCurrency(trade.exitPrice) : '—'}</td>
           <td>${sharesDisplay}</td>
           <td>${positionPercent !== null ? `${positionPercent.toFixed(2)}%` : '—'}</td>
           <td class="${hasPnL ? (pnl >= 0 ? 'journal-table__pnl--positive' : 'journal-table__pnl--negative') : ''}">
@@ -1162,6 +1223,20 @@ class JournalView {
     return null;
   }
 
+  // Calculate Simple Moving Average
+  calculateSMA(data, period) {
+    const sma = [];
+    for (let i = period - 1; i < data.length; i++) {
+      const sum = data.slice(i - period + 1, i + 1)
+        .reduce((acc, candle) => acc + candle.close, 0);
+      sma.push({
+        time: data[i].time,
+        value: sum / period
+      });
+    }
+    return sma;
+  }
+
   async renderChart(trade) {
     const chartContainer = document.getElementById(`chart-${trade.id}`);
     if (!chartContainer) return;
@@ -1259,6 +1334,44 @@ class JournalView {
 
       volumeSeries.setData(volumeData);
 
+      // Add 10-day and 20-day Simple Moving Averages
+      const sma10Data = this.calculateSMA(candles, 10);
+      const sma20Data = this.calculateSMA(candles, 20);
+
+      const sma10Series = chart.addLineSeries({
+        color: 'rgba(96, 165, 250, 0.5)', // Blue - reduced glow
+        lineWidth: 2,
+        priceScaleId: 'right',
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+
+      const sma20Series = chart.addLineSeries({
+        color: 'rgba(245, 158, 11, 0.5)', // Orange - reduced glow
+        lineWidth: 2,
+        priceScaleId: 'right',
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+
+      sma10Series.setData(sma10Data);
+      sma20Series.setData(sma20Data);
+
+      // Add custom legend in top-left corner
+      const legend = document.createElement('div');
+      legend.className = 'chart-legend';
+      legend.innerHTML = `
+        <div class="chart-legend__item">
+          <span class="chart-legend__line" style="background: rgba(96, 165, 250, 0.5);"></span>
+          <span class="chart-legend__label">10 SMA</span>
+        </div>
+        <div class="chart-legend__item">
+          <span class="chart-legend__line" style="background: rgba(245, 158, 11, 0.5);"></span>
+          <span class="chart-legend__label">20 SMA</span>
+        </div>
+      `;
+      chartContainer.appendChild(legend);
+
       // Add a marker for the entry day
       // Normalize to UTC midnight to match candle timestamps
       const entryDateOnly = trade.timestamp.split('T')[0]; // Get just YYYY-MM-DD
@@ -1268,16 +1381,54 @@ class JournalView {
         position: 'belowBar',
         color: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
         shape: 'arrowUp',
-        text: 'Entry @ ' + formatCurrency(trade.entry)
+        text: 'Entry'
       }];
+
+      // Add exit marker if trade is closed or trimmed
+      if ((trade.status === 'closed' || trade.status === 'trimmed') && trade.trimHistory && trade.trimHistory.length > 0) {
+        // Get the last trim (which is the final exit for closed trades)
+        const lastTrim = trade.trimHistory[trade.trimHistory.length - 1];
+        const exitDateOnly = lastTrim.date.split('T')[0]; // Get just YYYY-MM-DD
+        const exitTimestamp = Math.floor(new Date(exitDateOnly + 'T00:00:00Z').getTime() / 1000);
+
+        const isClose = trade.status === 'closed';
+        const exitColor = lastTrim.pnl >= 0
+          ? getComputedStyle(document.documentElement).getPropertyValue('--success').trim()
+          : getComputedStyle(document.documentElement).getPropertyValue('--danger').trim();
+
+        markers.push({
+          time: exitTimestamp,
+          position: 'aboveBar',
+          color: exitColor,
+          shape: 'arrowDown',
+          text: isClose ? 'Exit' : 'Trim'
+        });
+      }
+
       candleSeries.setMarkers(markers);
 
-      // Set initial visible range: ~2.5 months before entry to ~2 weeks after
-      // This shows the setup and initial price action after entry
-      const daysBeforeEntry = 75; // ~2.5 months
-      const daysAfterEntry = 15; // ~2 weeks
-      const fromTime = entryTimestamp - (daysBeforeEntry * 24 * 60 * 60);
-      const toTime = entryTimestamp + (daysAfterEntry * 24 * 60 * 60);
+      // Set initial visible range
+      // For closed trades: show from ~2 months before entry to ~2 weeks after exit
+      // For open trades: show from ~2.5 months before entry to ~2 weeks after
+      let fromTime, toTime;
+
+      if ((trade.status === 'closed' || trade.status === 'trimmed') && trade.trimHistory && trade.trimHistory.length > 0) {
+        // Closed/trimmed trade: show full trade duration
+        const lastTrim = trade.trimHistory[trade.trimHistory.length - 1];
+        const exitDateOnly = lastTrim.date.split('T')[0];
+        const exitTimestamp = Math.floor(new Date(exitDateOnly + 'T00:00:00Z').getTime() / 1000);
+
+        const daysBeforeEntry = 60; // ~2 months
+        const daysAfterExit = 15; // ~2 weeks
+        fromTime = entryTimestamp - (daysBeforeEntry * 24 * 60 * 60);
+        toTime = exitTimestamp + (daysAfterExit * 24 * 60 * 60);
+      } else {
+        // Open trade: show setup and initial price action
+        const daysBeforeEntry = 75; // ~2.5 months
+        const daysAfterEntry = 15; // ~2 weeks
+        fromTime = entryTimestamp - (daysBeforeEntry * 24 * 60 * 60);
+        toTime = entryTimestamp + (daysAfterEntry * 24 * 60 * 60);
+      }
 
       chart.timeScale().setVisibleRange({
         from: fromTime,

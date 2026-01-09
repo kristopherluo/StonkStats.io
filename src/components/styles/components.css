@@ -15,22 +15,37 @@
   font-weight: var(--font-medium);
   line-height: 1;
   color: var(--text-primary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.08) 0%, transparent 70%),
+    linear-gradient(145deg, #0a0a0a 0%, #000000 100%);
+  border: 1.5px solid rgba(96, 165, 250, 0.3);
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
+  position: relative;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .btn:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-strong);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.12) 0%, transparent 70%),
+    linear-gradient(145deg, #0f0f0f 0%, #000000 100%);
+  border-color: rgba(96, 165, 250, 0.5);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 12px rgba(59, 130, 246, 0.25),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
 }
 
 .btn:focus {
   outline: none;
-  box-shadow: none;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 16px rgba(59, 130, 246, 0.3);
 }
 
 .btn:active {
@@ -38,25 +53,31 @@
 }
 
 .btn--primary {
-  color: white;
-  background: var(--primary);
-  border-color: var(--primary);
+  color: rgba(255, 255, 255, 0.95);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.25) 0%, transparent 70%),
+    linear-gradient(145deg, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1.5px solid rgba(96, 165, 250, 0.7);
+  font-weight: 600;
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(59, 130, 246, 0.4),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .btn--primary:hover {
-  background: var(--primary-hover);
-  border-color: var(--primary-hover);
-}
-
-/* Neon glow effect for primary buttons in modals and filters */
-.modal .btn--primary:hover,
-.filter-dropdown .btn--primary:hover {
+  border-color: rgba(96, 165, 250, 0.9);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.35) 0%, transparent 70%),
+    linear-gradient(145deg, rgba(59, 130, 246, 0.22) 0%, rgba(59, 130, 246, 0.14) 100%);
+  text-shadow: 0 0 12px rgba(96, 165, 250, 0.8);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.6),
-    0 0 1px 1px rgba(59, 130, 246, 0.7),
-    0 0 4px 2px rgba(96, 165, 250, 0.5),
-    0 0 8px 3px rgba(167, 139, 250, 0.3),
-    inset 0 0 12px rgba(59, 130, 246, 0.1);
+    0 0 2px 2px rgba(59, 130, 246, 0.7),
+    0 0 6px 3px rgba(96, 165, 250, 0.5),
+    0 0 12px 4px rgba(167, 139, 250, 0.3),
+    inset 0 0 16px rgba(59, 130, 246, 0.15);
 }
 
 .btn--success {
@@ -106,42 +127,46 @@
 }
 
 .btn--secondary {
-  background: var(--bg-surface);
-  border-color: var(--border-default);
+  color: var(--text-primary);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.06) 0%, transparent 70%),
+    linear-gradient(145deg, #0a0a0a 0%, #000000 100%);
+  border: 1.5px solid rgba(96, 165, 250, 0.25);
+  font-weight: 500;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
-/* Neon glow effect for secondary buttons in modals and filters */
-.modal .btn--secondary:hover,
-.modal .btn:hover:not(.btn--primary):not(.btn--success):not(.btn--ghost),
-.filter-dropdown .btn--secondary:hover,
-.filter-dropdown .btn:hover:not(.btn--primary):not(.btn--success):not(.btn--ghost) {
+.btn--secondary:hover {
+  border-color: rgba(96, 165, 250, 0.45);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.1) 0%, transparent 70%),
+    linear-gradient(145deg, #0f0f0f 0%, #000000 100%);
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.5),
-    0 0 1px 1px rgba(96, 165, 250, 0.4),
-    0 0 3px 1.5px rgba(96, 165, 250, 0.3),
-    0 0 6px 2px rgba(167, 139, 250, 0.2),
-    inset 0 0 10px rgba(59, 130, 246, 0.06);
+    0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 12px rgba(59, 130, 246, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
 }
 
 .btn--ghost {
   background: transparent;
-  border-color: transparent;
+  border: 1.5px solid transparent;
   color: var(--text-secondary);
+  font-weight: 500;
+  box-shadow: none;
 }
 
 .btn--ghost:hover {
-  background: var(--bg-hover);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.08) 0%, transparent 70%),
+    var(--bg-hover);
+  border-color: rgba(96, 165, 250, 0.2);
   color: var(--text-primary);
-}
-
-/* Neon glow effect for ghost buttons in modals */
-.modal .btn--ghost:hover:not(.btn--danger) {
   box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.4),
-    0 0 1px 1px rgba(96, 165, 250, 0.3),
-    0 0 3px 1.5px rgba(96, 165, 250, 0.25),
-    0 0 6px 2px rgba(167, 139, 250, 0.15),
-    inset 0 0 8px rgba(59, 130, 246, 0.05);
+    0 2px 6px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(59, 130, 246, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .btn--full {
@@ -4849,12 +4874,16 @@ input[type="date"].input:focus {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--border-radius-sm);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
 .filter-radio:hover,
 .filter-checkbox:hover {
-  background: var(--bg-hover);
+  background:
+    radial-gradient(circle at 0% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
+    var(--bg-hover);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.1);
 }
 
 .filter-radio input[type="radio"],
@@ -4867,9 +4896,24 @@ input[type="date"].input:focus {
 .filter-radio__label,
 .filter-checkbox__label {
   font-size: var(--text-sm);
-  color: var(--text);
+  color: var(--text-secondary);
   cursor: pointer;
   user-select: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+}
+
+.filter-radio:hover .filter-radio__label,
+.filter-checkbox:hover .filter-checkbox__label {
+  color: var(--text-primary);
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.3);
+}
+
+.filter-radio input[type="radio"]:checked ~ .filter-radio__label,
+.filter-checkbox input[type="checkbox"]:checked ~ .filter-checkbox__label {
+  color: var(--primary);
+  text-shadow: 0 0 12px rgba(96, 165, 250, 0.5);
+  font-weight: 600;
 }
 
 .filter-dropdown__footer {
@@ -4902,7 +4946,7 @@ input[type="date"].input:focus {
   opacity: 1;
 }
 
-/* Custom styled checkboxes and radios for filters */
+/* Custom styled checkboxes and radios for filters - Cyberpunk/Neon Theme */
 .filter-radio input[type="radio"],
 .filter-checkbox input[type="checkbox"] {
   appearance: none;
@@ -4910,11 +4954,17 @@ input[type="date"].input:focus {
   width: 18px;
   height: 18px;
   margin: 0;
-  border: 2px solid var(--border-default);
-  background: var(--bg-elevated);
+  border: 1.5px solid rgba(96, 165, 250, 0.3);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 70%),
+    linear-gradient(145deg, #0a0a0a 0%, #000000 100%);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  position: relative;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.6),
+    inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .filter-radio input[type="radio"] {
@@ -4927,15 +4977,28 @@ input[type="date"].input:focus {
 
 .filter-radio input[type="radio"]:hover,
 .filter-checkbox input[type="checkbox"]:hover {
-  border-color: var(--primary);
-  background: var(--bg-surface);
+  border-color: rgba(96, 165, 250, 0.6);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 70%),
+    linear-gradient(145deg, #0f0f0f 0%, #000000 100%);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.7),
+    0 0 12px rgba(59, 130, 246, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.08);
 }
 
 .filter-radio input[type="radio"]:checked,
 .filter-checkbox input[type="checkbox"]:checked {
-  border-color: var(--primary);
-  background: var(--primary);
-  position: relative;
+  border-color: rgba(96, 165, 250, 0.9);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.2) 100%),
+    linear-gradient(145deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 16px rgba(59, 130, 246, 0.5),
+    0 0 4px rgba(96, 165, 250, 0.8),
+    inset 0 0 8px rgba(59, 130, 246, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 .filter-radio input[type="radio"]:checked::before {
@@ -4944,10 +5007,13 @@ input[type="date"].input:focus {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 0 8px rgba(96, 165, 250, 0.8),
+    0 0 4px rgba(255, 255, 255, 0.6);
 }
 
 .filter-checkbox input[type="checkbox"]:checked::after {
@@ -4957,15 +5023,19 @@ input[type="date"].input:focus {
   top: 2px;
   width: 4px;
   height: 8px;
-  border: solid white;
+  border: solid rgba(255, 255, 255, 0.95);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+  filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.6));
 }
 
 .filter-radio input[type="radio"]:focus,
 .filter-checkbox input[type="checkbox"]:focus {
   outline: none;
-  box-shadow: 0 0 0 3px var(--primary-muted);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 16px rgba(59, 130, 246, 0.4);
 }
 
 .filter-dropdown__divider {
@@ -4988,14 +5058,30 @@ input[type="date"].input:focus {
 }
 
 .filter-preset-btn.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
+  color: rgba(255, 255, 255, 0.95);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.3) 0%, transparent 70%),
+    linear-gradient(145deg, rgba(59, 130, 246, 0.18) 0%, rgba(59, 130, 246, 0.1) 100%);
+  border: 1.5px solid rgba(96, 165, 250, 0.8);
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.6),
+    0 0 12px rgba(59, 130, 246, 0.4),
+    inset 0 0 8px rgba(59, 130, 246, 0.2);
 }
 
 .filter-preset-btn.active:hover {
-  background: var(--primary-dark);
-  border-color: var(--primary-dark);
+  border-color: rgba(96, 165, 250, 0.9);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.35) 0%, transparent 70%),
+    linear-gradient(145deg, rgba(59, 130, 246, 0.22) 0%, rgba(59, 130, 246, 0.14) 100%);
+  text-shadow: 0 0 12px rgba(96, 165, 250, 0.8);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.6),
+    0 0 2px 2px rgba(59, 130, 246, 0.6),
+    0 0 6px 3px rgba(96, 165, 250, 0.4),
+    0 0 12px 4px rgba(167, 139, 250, 0.3),
+    inset 0 0 12px rgba(59, 130, 246, 0.25);
 }
 
 .filter-date-inputs {
