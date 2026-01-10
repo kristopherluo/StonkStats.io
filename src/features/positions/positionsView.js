@@ -91,7 +91,7 @@ class PositionsView {
       filterClose: document.getElementById('positionsFilterClose'),
       filterCount: document.getElementById('positionsFilterCount'),
       applyFilters: document.getElementById('positionsApplyFilters'),
-      clearFilters: document.getElementById('positionsClearFilters'),
+      selectAllTypes: document.getElementById('positionsSelectAllTypes'),
       statusBtns: document.querySelectorAll('#positionsFilterPanel .filter-status-btn'),
       typeAllCheckbox: document.getElementById('filterTypeAll'),
       typeCheckboxes: document.querySelectorAll('#positionsFilterPanel input[type="checkbox"]:not(#filterTypeAll)')
@@ -133,8 +133,8 @@ class PositionsView {
       this.elements.applyFilters.addEventListener('click', () => this.applyFilters());
     }
 
-    if (this.elements.clearFilters) {
-      this.elements.clearFilters.addEventListener('click', () => this.clearAllFilters());
+    if (this.elements.selectAllTypes) {
+      this.elements.selectAllTypes.addEventListener('click', () => this.selectAllTypes());
     }
 
     // Close panel when clicking backdrop
@@ -273,18 +273,19 @@ class PositionsView {
     this.render();
   }
 
-  clearAllFilters() {
-    // Only reset the UI - don't apply until user clicks "Apply"
+  selectAllTypes() {
+    // Reset status to "all"
     this.elements.statusBtns?.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.status === 'all');
     });
 
-    // Uncheck all type checkboxes including "All Types"
+    // Check all type checkboxes (changed from unchecking to checking)
     this.elements.typeCheckboxes?.forEach(checkbox => {
-      checkbox.checked = false;
+      checkbox.checked = true;
     });
+    // Check the "All Types" checkbox
     if (this.elements.typeAllCheckbox) {
-      this.elements.typeAllCheckbox.checked = false;
+      this.elements.typeAllCheckbox.checked = true;
       this.elements.typeAllCheckbox.indeterminate = false;
     }
   }
@@ -297,8 +298,15 @@ class PositionsView {
       count++;
     }
 
-    // Count type filters
-    count += this.filters.types.length;
+    // Count type filters (only if not all types are selected)
+    // Get total number of available types
+    const totalTypes = this.elements.typeCheckboxes?.length || 0;
+    const selectedTypes = this.filters.types.length;
+
+    // Only count as a filter if not all types are selected (all types = default state)
+    if (selectedTypes > 0 && selectedTypes < totalTypes) {
+      count += selectedTypes;
+    }
 
     // Update badge
     if (count > 0) {

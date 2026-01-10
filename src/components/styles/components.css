@@ -4699,11 +4699,17 @@ input[type="date"].input:focus {
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
-  background: var(--primary);
-  color: white;
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--primary-light);
+  border: 1.5px solid rgba(96, 165, 250, 0.5);
   border-radius: 10px;
   font-size: 0.75rem;
   font-weight: 600;
+  box-shadow:
+    0 0 12px rgba(59, 130, 246, 0.4),
+    0 0 24px rgba(59, 130, 246, 0.2),
+    inset 0 0 8px rgba(59, 130, 246, 0.15);
+  text-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
 }
 
 .filter-dropdown__panel {
@@ -5068,6 +5074,13 @@ input[type="date"].input:focus {
 .filter-preset-btn {
   flex: 1;
   min-width: fit-content;
+  border: 1.5px solid rgba(96, 165, 250, 0.25);
+  box-shadow: 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.filter-preset-btn:hover {
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
 }
 
 .filter-preset-btn.active {
@@ -5095,6 +5108,30 @@ input[type="date"].input:focus {
     0 0 6px 3px rgba(96, 165, 250, 0.4),
     0 0 12px 4px rgba(167, 139, 250, 0.3),
     inset 0 0 12px rgba(59, 130, 246, 0.25);
+}
+
+/* Connected button group styling */
+.filter-preset-group--connected {
+  gap: 0;
+  flex-wrap: nowrap;
+}
+
+.filter-preset-group--connected .filter-preset-btn {
+  border-radius: 0;
+  margin-left: -1px;
+}
+
+.filter-preset-group--connected .filter-preset-btn:first-child {
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+  margin-left: 0;
+}
+
+.filter-preset-group--connected .filter-preset-btn:last-child {
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.filter-preset-group--connected .filter-preset-btn:only-child {
+  border-radius: var(--border-radius);
 }
 
 .filter-date-inputs {

@@ -8,6 +8,7 @@ import { trimModal } from '../../components/modals/trimModal.js';
 import { viewManager } from '../../components/ui/viewManager.js';
 import { dataManager } from '../../core/dataManager.js';
 import { priceTracker } from '../../core/priceTracker.js';
+import { showToast } from '../../components/ui/ui.js';
 
 class JournalView {
   constructor() {
@@ -94,7 +95,7 @@ class JournalView {
       filterBackdrop: document.getElementById('journalFilterBackdrop'),
       filterCount: document.getElementById('journalFilterCount'),
       applyFilters: document.getElementById('journalApplyFilters'),
-      clearFilters: document.getElementById('journalClearFilters'),
+      selectAllTypes: document.getElementById('journalSelectAllTypes'),
       statusBtns: document.querySelectorAll('#journalFilterPanel .filter-status-btn'),
       typeCheckboxes: document.querySelectorAll('.journal-type-checkbox'),
       allTypesCheckbox: document.getElementById('journalAllTypesCheckbox'),
@@ -125,8 +126,8 @@ class JournalView {
       this.elements.applyFilters.addEventListener('click', () => this.applyFilters());
     }
 
-    if (this.elements.clearFilters) {
-      this.elements.clearFilters.addEventListener('click', () => this.clearAllFilters());
+    if (this.elements.selectAllTypes) {
+      this.elements.selectAllTypes.addEventListener('click', () => this.selectAllTypes());
     }
 
     // Filter backdrop
@@ -343,7 +344,7 @@ class JournalView {
     );
     clickedBtn?.classList.add('active');
 
-    if (range === 'all') {
+    if (range === 'max') {
       // Clear date inputs but keep gray styling for empty state
       if (this.elements.dateFrom) {
         this.elements.dateFrom.value = '';
@@ -353,8 +354,22 @@ class JournalView {
         this.elements.dateTo.value = '';
         this.elements.dateTo.classList.add('preset-value');
       }
+    } else if (range === 'ytd') {
+      // Year to date - from Jan 1 of current year to today
+      const today = new Date();
+      const fromDate = new Date(today.getFullYear(), 0, 1); // Jan 1 of current year
+
+      // Set date inputs and add preset styling
+      if (this.elements.dateFrom) {
+        this.elements.dateFrom.value = fromDate.toISOString().split('T')[0];
+        this.elements.dateFrom.classList.add('preset-value');
+      }
+      if (this.elements.dateTo) {
+        this.elements.dateTo.value = today.toISOString().split('T')[0];
+        this.elements.dateTo.classList.add('preset-value');
+      }
     } else {
-      // Calculate date range
+      // Calculate date range based on number of days
       const today = new Date();
       const fromDate = new Date();
       fromDate.setDate(today.getDate() - parseInt(range));
@@ -385,6 +400,12 @@ class JournalView {
     const dateFrom = this.elements.dateFrom?.value || null;
     const dateTo = this.elements.dateTo?.value || null;
 
+    // Validate date range
+    if (dateFrom && dateTo && dateFrom > dateTo) {
+      showToast('⚠️ Start date cannot be after end date', 'warning');
+      return; // Don't apply filters
+    }
+
     // Update filters
     this.filters.status = selectedStatus;
     this.filters.types = selectedTypes;
@@ -405,18 +426,19 @@ class JournalView {
     this.render();
   }
 
-  clearAllFilters() {
-    // Only reset the UI - don't apply until user clicks "Apply"
+  selectAllTypes() {
+    // Reset status to "all"
     this.elements.statusBtns?.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.status === 'all');
     });
 
-    // Uncheck all type checkboxes and "All Types"
+    // Check all type checkboxes (changed from unchecking to checking)
     this.elements.typeCheckboxes?.forEach(checkbox => {
-      checkbox.checked = false;
+      checkbox.checked = true;
     });
+    // Check the "All Types" checkbox
     if (this.elements.allTypesCheckbox) {
-      this.elements.allTypesCheckbox.checked = false;
+      this.elements.allTypesCheckbox.checked = true;
       this.elements.allTypesCheckbox.indeterminate = false;
     }
 
@@ -444,8 +466,15 @@ class JournalView {
       count++;
     }
 
-    // Count type filters
-    count += this.filters.types.length;
+    // Count type filters (only if not all types are selected)
+    // Get total number of available types
+    const totalTypes = this.elements.typeCheckboxes?.length || 0;
+    const selectedTypes = this.filters.types.length;
+
+    // Only count as a filter if not all types are selected (all types = default state)
+    if (selectedTypes > 0 && selectedTypes < totalTypes) {
+      count += selectedTypes;
+    }
 
     // Count date range filter
     if (this.filters.dateFrom || this.filters.dateTo) {
@@ -473,6 +502,14 @@ class JournalView {
     this.expandedRows.clear();
 
     this.render();
+  }
+
+  formatDateLocal(date) {
+    // Format date as YYYY-MM-DD in local timezone
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   getFilteredTrades() {
@@ -517,7 +554,7 @@ class JournalView {
     if (this.filters.dateFrom || this.filters.dateTo) {
       filtered = filtered.filter(trade => {
         const tradeDate = new Date(trade.timestamp);
-        const tradeDateOnly = tradeDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        const tradeDateOnly = this.formatDateLocal(tradeDate); // YYYY-MM-DD in local timezone
 
         let inRange = true;
 
@@ -648,7 +685,9 @@ class JournalView {
         // Format dates nicely
         const formatShortDate = (dateStr) => {
           if (dateStr === 'Beginning' || dateStr === 'Today') return dateStr;
-          const date = new Date(dateStr);
+          // Parse YYYY-MM-DD string manually to avoid UTC timezone issues
+          const [year, month, day] = dateStr.split('-').map(Number);
+          const date = new Date(year, month - 1, day); // month is 0-indexed
           return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         };
 
