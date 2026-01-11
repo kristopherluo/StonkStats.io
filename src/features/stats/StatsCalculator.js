@@ -112,6 +112,7 @@ export class StatsCalculator {
         txDate.setHours(0, 0, 0, 0);
         const txDateStr = this._formatDate(txDate);
 
+        // Check if transaction date is within range
         let inRange = true;
         if (dateFrom) {
           inRange = inRange && txDateStr >= dateFrom;
@@ -119,6 +120,7 @@ export class StatsCalculator {
         if (dateTo) {
           inRange = inRange && txDateStr <= dateTo;
         }
+
         return inRange;
       })
       .reduce((sum, tx) => sum + (tx.type === 'deposit' ? tx.amount : -tx.amount), 0);
@@ -138,10 +140,12 @@ export class StatsCalculator {
       .map(e => new Date(e.timestamp));
 
     if (allEntryDates.length === 0) {
+      const mostRecentWeekday = getCurrentWeekday();
       return {
         pnl: 0,
         startingBalance: startingAccountSize,
-        endingBalance: startingAccountSize
+        endingBalance: startingAccountSize,
+        startDateStr: this._formatDate(mostRecentWeekday)
       };
     }
 

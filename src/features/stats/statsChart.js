@@ -58,14 +58,20 @@ class EquityChart {
     this.resize();
 
     // Handle resize
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener('resize', () => {
+      this.resize();
+      // Re-render if we have data
+      if (this.data) {
+        this.render();
+      }
+    });
 
     // Handle mouse events for tooltip
     this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
     this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
 
     // Note: Rendering is now controlled by stats.js via setData() and render()
-    // No need to listen for view or journal changes here
+    // stats.js handles the view transition timing and calls refresh() when ready
     // The resize happens automatically via the window resize listener above
   }
 
@@ -87,10 +93,8 @@ class EquityChart {
     // Setting canvas width/height resets the context, so reapply transformations
     this.ctx.scale(this.dpr, this.dpr);
 
-    // Only render if we have data
-    if (this.data) {
-      this.render();
-    }
+    // Note: Render is now called explicitly by the caller after resize
+    // This prevents double-rendering with stale data
   }
 
   getColors() {
@@ -107,17 +111,25 @@ class EquityChart {
   async render() {
     if (!this.ctx || !this.canvas) return;
 
-    // Use data passed from stats.js instead of fetching
     const data = this.data;
     if (!data) {
       console.warn('No data to render');
       return;
     }
 
+    const rect = this.container.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      return;
+    }
+
+    if (this.canvas.width !== rect.width * this.dpr ||
+        this.canvas.height !== rect.height * this.dpr) {
+      this.resize();
+    }
+
     const width = this.canvas.width / this.dpr;
     const height = this.canvas.height / this.dpr;
 
-    // Skip render if canvas hasn't been properly sized yet
     if (width === 0 || height === 0) {
       return;
     }

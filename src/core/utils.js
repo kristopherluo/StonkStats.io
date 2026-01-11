@@ -176,6 +176,26 @@ export function initFlatpickr(dateInput, options = {}) {
           yearInput.parentNode.replaceChild(yearSelect, yearInput);
         }
       }, 50);
+    },
+    // Update year dropdown when month navigation changes the year
+    onMonthChange: function(selectedDates, dateStr, instance) {
+      setTimeout(() => {
+        const yearSelect = instance.calendarContainer.querySelector('.cur-year');
+        if (yearSelect && yearSelect.tagName === 'SELECT') {
+          const currentYear = instance.currentYear;
+          yearSelect.value = currentYear;
+        }
+      }, 10);
+    },
+    // Update year dropdown when year changes
+    onYearChange: function(selectedDates, dateStr, instance) {
+      setTimeout(() => {
+        const yearSelect = instance.calendarContainer.querySelector('.cur-year');
+        if (yearSelect && yearSelect.tagName === 'SELECT') {
+          const currentYear = instance.currentYear;
+          yearSelect.value = currentYear;
+        }
+      }, 10);
     }
   };
 

@@ -108,8 +108,10 @@ class Stats {
     });
     state.on('viewChanged', (data) => {
       if (data.to === 'stats') {
-        this.refresh();
         this.animateStatCards();
+        setTimeout(() => {
+          this.refresh();
+        }, 550);
       }
     });
 
@@ -141,7 +143,6 @@ class Stats {
     // Initial calculation and render
     this.refresh();
 
-    // Animate on load if stats view is active
     const statsView = document.getElementById('statsView');
     if (statsView && statsView.classList.contains('view--active')) {
       setTimeout(() => this.animateStatCards(), 100);
@@ -510,7 +511,6 @@ class Stats {
 
       console.log('Equity curve data points:', curveData.length);
 
-      // Render chart
       this.chart.setData(curveData);
       this.chart.render();
 
@@ -593,15 +593,11 @@ class Stats {
 
     statsSections.forEach(section => {
       const cards = section.querySelectorAll('.stat-card');
-      const chart = section.querySelector('.stats-chart');
       cards.forEach(card => {
         card.classList.remove('stat-card--animate');
         card.style.animationDelay = '';
       });
-      if (chart) {
-        chart.classList.remove('stats-chart--animate');
-        chart.style.animationDelay = '';
-      }
+      // Chart fade-in is now handled in renderEquityCurve()
     });
 
     void document.body.offsetHeight;
@@ -609,7 +605,6 @@ class Stats {
     setTimeout(() => {
       statsSections.forEach((section, sectionIndex) => {
         const cards = section.querySelectorAll('.stat-card');
-        const chart = section.querySelector('.stats-chart');
 
         if (cards.length > 0) {
           cards.forEach((card, cardIndex) => {
@@ -619,11 +614,7 @@ class Stats {
           });
         }
 
-        if (chart) {
-          const totalIndex = sectionIndex * 4;
-          chart.style.animationDelay = `${totalIndex * 80}ms`;
-          chart.classList.add('stats-chart--animate');
-        }
+        // Chart already has fade-in class applied above
       });
     }, 50);
   }

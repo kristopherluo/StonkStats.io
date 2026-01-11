@@ -642,7 +642,8 @@
         <div class="cash-flow-actions">
           <div class="input-group">
             <label class="input-label" for="depositAmount">Deposit</label>
-            <div class="input-with-btn">
+            <div class="input-with-btn input-with-btn--extended">
+              <input type="text" class="input input--date" id="depositDate" placeholder="Select date">
               <div class="input-wrapper input-wrapper--prefix">
                 <span class="input-prefix">$</span>
                 <input type="text" class="input input--mono" id="depositAmount" placeholder="0.00">
@@ -652,14 +653,15 @@
                   <line x1="12" y1="5" x2="12" y2="19"></line>
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                Deposit
+                Confirm
               </button>
             </div>
           </div>
 
           <div class="input-group">
             <label class="input-label" for="withdrawAmount">Withdraw</label>
-            <div class="input-with-btn">
+            <div class="input-with-btn input-with-btn--extended">
+              <input type="text" class="input input--date" id="withdrawDate" placeholder="Select date">
               <div class="input-wrapper input-wrapper--prefix">
                 <span class="input-prefix">$</span>
                 <input type="text" class="input input--mono" id="withdrawAmount" placeholder="0.00">
@@ -668,7 +670,7 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                Withdraw
+                Confirm
               </button>
             </div>
           </div>
@@ -1083,7 +1085,7 @@
               Target Price <span class="label-optional">(optional)</span>
               <span class="tooltip">
                 <span class="tooltip__icon">?</span>
-                <span class="tooltip__content">Your profit target price. Use this to plan your risk/reward ratio before entering a trade. A good rule of thumb is targeting at least 2-3x your risk.</span>
+                <span class="tooltip__content">Your profit target price. Use this to plan your risk/reward ratio before entering a trade. This will default to 5x your risk.</span>
               </span>
             </label>
             <div class="input-wrapper input-wrapper--prefix">

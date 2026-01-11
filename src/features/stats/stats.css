@@ -473,31 +473,6 @@
 
 /* === Entrance Animations === */
 
-.stats-view.view--active .stats-header {
-  animation: fadeInUp 0.4s ease-out backwards;
-  animation-delay: 0ms;
-}
-
-.stats-view.view--active .stats-section:nth-child(1) {
-  animation: fadeInUp 0.4s ease-out backwards;
-  animation-delay: 80ms;
-}
-
-.stats-view.view--active .stats-section:nth-child(2) {
-  animation: fadeInUp 0.4s ease-out backwards;
-  animation-delay: 140ms;
-}
-
-.stats-view.view--active .stats-chart {
-  animation: fadeInUp 0.4s ease-out backwards;
-  animation-delay: 200ms;
-}
-
-.stats-view.view--active .stats-empty {
-  animation: fadeInUp 0.4s ease-out backwards;
-  animation-delay: 80ms;
-}
-
 /* === Responsive Adjustments === */
 
 @media (max-width: 768px) {

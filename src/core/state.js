@@ -130,12 +130,12 @@ class AppState {
   }
 
   // Cash Flow methods
-  addCashFlowTransaction(type, amount) {
+  addCashFlowTransaction(type, amount, timestamp = null) {
     const transaction = {
       id: Date.now(),
       type, // 'deposit' or 'withdrawal'
       amount,
-      timestamp: new Date().toISOString()
+      timestamp: timestamp || new Date().toISOString()  // Use provided or default to now
     };
 
     this.state.cashFlow.transactions.unshift(transaction);
@@ -152,6 +152,29 @@ class AppState {
     this.emit('cashFlowChanged', this.state.cashFlow);
     this.emit('accountSizeChanged', this.state.account.currentSize);
     return transaction;
+  }
+
+  deleteCashFlowTransaction(id) {
+    const index = this.state.cashFlow.transactions.findIndex(tx => tx.id === id);
+
+    if (index === -1) return null;
+
+    const deleted = this.state.cashFlow.transactions.splice(index, 1)[0];
+
+    // Update totals
+    if (deleted.type === 'deposit') {
+      this.state.cashFlow.totalDeposits -= deleted.amount;
+      this.state.account.currentSize -= deleted.amount;
+    } else if (deleted.type === 'withdrawal') {
+      this.state.cashFlow.totalWithdrawals -= deleted.amount;
+      this.state.account.currentSize += deleted.amount;
+    }
+
+    this.saveCashFlow();
+    this.emit('cashFlowChanged', this.state.cashFlow);
+    this.emit('accountSizeChanged', this.state.account.currentSize);
+
+    return deleted;
   }
 
   getCashFlowNet() {
@@ -460,6 +483,7 @@ class AppState {
   // Getters
   get settings() { return this.state.settings; }
   get account() { return this.state.account; }
+  get cashFlow() { return this.state.cashFlow; }
   get trade() { return this.state.trade; }
   get results() { return this.state.results; }
   get journal() { return this.state.journal; }

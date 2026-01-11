@@ -3,7 +3,7 @@
  */
 
 import { state } from '../../core/state.js';
-import { parseNumber, formatCurrency, formatWithCommas } from '../../core/utils.js';
+import { parseNumber, formatCurrency, formatWithCommas, initFlatpickr, getCurrentWeekday } from '../../core/utils.js';
 import { showToast } from '../../components/ui/ui.js';
 import { dataManager } from '../../core/dataManager.js';
 import { clearDataModal } from '../../components/modals/clearDataModal.js';
@@ -14,11 +14,15 @@ import { historicalPricesBatcher } from '../stats/HistoricalPricesBatcher.js';
 class Settings {
   constructor() {
     this.elements = {};
+    // Store flatpickr instances
+    this.depositDatePicker = null;
+    this.withdrawDatePicker = null;
   }
 
   init() {
     this.cacheElements();
     this.bindEvents();
+    this.initializeDatePickers();
     this.loadAndApply();
 
     // Listen for account changes
@@ -91,8 +95,10 @@ class Settings {
       cashFlowDeposits: document.getElementById('cashFlowDeposits'),
       cashFlowWithdrawals: document.getElementById('cashFlowWithdrawals'),
       depositAmount: document.getElementById('depositAmount'),
-      withdrawAmount: document.getElementById('withdrawAmount'),
+      depositDate: document.getElementById('depositDate'),
       depositBtn: document.getElementById('depositBtn'),
+      withdrawAmount: document.getElementById('withdrawAmount'),
+      withdrawDate: document.getElementById('withdrawDate'),
       withdrawBtn: document.getElementById('withdrawBtn'),
       cashFlowHistory: document.getElementById('cashFlowHistory'),
 
@@ -314,6 +320,29 @@ class Settings {
     }
   }
 
+  initializeDatePickers() {
+    // Initialize deposit date picker
+    if (this.elements.depositDate) {
+      this.depositDatePicker = initFlatpickr(this.elements.depositDate, {
+        defaultDate: getCurrentWeekday(),  // Default to today or recent weekday
+        onChange: (selectedDates, dateStr, instance) => {
+          // Optional: Add visual feedback when date changes
+          this.elements.depositDate.classList.add('has-value');
+        }
+      });
+    }
+
+    // Initialize withdraw date picker
+    if (this.elements.withdrawDate) {
+      this.withdrawDatePicker = initFlatpickr(this.elements.withdrawDate, {
+        defaultDate: getCurrentWeekday(),
+        onChange: (selectedDates, dateStr, instance) => {
+          this.elements.withdrawDate.classList.add('has-value');
+        }
+      });
+    }
+  }
+
   loadAndApply() {
     // Load saved settings
     state.loadSettings();
@@ -489,9 +518,22 @@ class Settings {
       return;
     }
 
-    state.addCashFlowTransaction('deposit', amount);
+    // Get selected date or default to today
+    let selectedDate = new Date();
+    if (this.depositDatePicker && this.depositDatePicker.selectedDates.length > 0) {
+      selectedDate = this.depositDatePicker.selectedDates[0];
+    }
+
+    // Add transaction with custom timestamp
+    state.addCashFlowTransaction('deposit', amount, selectedDate.toISOString());
+
+    // Clear inputs and reset date to today
     this.elements.depositAmount.value = '';
-    this.updateSummary();
+    if (this.depositDatePicker) {
+      this.depositDatePicker.setDate(getCurrentWeekday());
+    }
+
+    this.updateCashFlowDisplay();  // Immediate UI update
     showToast(`✅ Deposited ${formatCurrency(amount)}`, 'success');
   }
 
@@ -504,10 +546,37 @@ class Settings {
       return;
     }
 
-    state.addCashFlowTransaction('withdrawal', amount);
+    // Get selected date or default to today
+    let selectedDate = new Date();
+    if (this.withdrawDatePicker && this.withdrawDatePicker.selectedDates.length > 0) {
+      selectedDate = this.withdrawDatePicker.selectedDates[0];
+    }
+
+    // Add transaction with custom timestamp
+    state.addCashFlowTransaction('withdrawal', amount, selectedDate.toISOString());
+
+    // Clear inputs and reset date to today
     this.elements.withdrawAmount.value = '';
-    this.updateSummary();
+    if (this.withdrawDatePicker) {
+      this.withdrawDatePicker.setDate(getCurrentWeekday());
+    }
+
+    this.updateCashFlowDisplay();  // Immediate UI update
     showToast(`✅ Withdrew ${formatCurrency(amount)}`, 'success');
+  }
+
+  handleDeleteTransaction(transactionId) {
+    if (!confirm('Delete this transaction? This cannot be undone.')) {
+      return;
+    }
+
+    const deleted = state.deleteCashFlowTransaction(transactionId);
+
+    if (deleted) {
+      const type = deleted.type === 'deposit' ? 'Deposit' : 'Withdrawal';
+      showToast(`🗑️ ${type} deleted`, 'success');
+      this.updateCashFlowDisplay();  // Immediate UI update
+    }
   }
 
   updateCashFlowDisplay() {
@@ -542,13 +611,11 @@ class Settings {
       return;
     }
 
-    const maxShow = 5; // Show latest 5 transactions
-    const recentTransactions = transactions.slice(0, maxShow);
-
+    // Show ALL transactions, not just 5
     const historyHTML = `
       <div class="cash-flow-history__title">Recent Transactions</div>
       <div class="cash-flow-history__list">
-        ${recentTransactions.map(t => `
+        ${transactions.map(t => `
           <div class="cash-flow-transaction">
             <div class="cash-flow-transaction__info">
               <span class="cash-flow-transaction__type cash-flow-transaction__type--${t.type}">
@@ -556,33 +623,43 @@ class Settings {
               </span>
               <span class="cash-flow-transaction__date">${this.formatTransactionDate(t.timestamp)}</span>
             </div>
-            <span class="cash-flow-transaction__amount">
-              ${t.type === 'deposit' ? '+' : '-'}${formatCurrency(t.amount)}
-            </span>
+            <div class="cash-flow-transaction__right">
+              <span class="cash-flow-transaction__amount">
+                ${t.type === 'deposit' ? '+' : '-'}${formatCurrency(t.amount)}
+              </span>
+              <button class="btn-icon btn-icon--danger" data-action="delete-transaction" data-id="${t.id}" title="Delete transaction">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         `).join('')}
       </div>
     `;
 
     this.elements.cashFlowHistory.innerHTML = historyHTML;
+
+    // Bind delete button events
+    this.elements.cashFlowHistory.querySelectorAll('[data-action="delete-transaction"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = parseInt(e.currentTarget.dataset.id);
+        this.handleDeleteTransaction(id);
+      });
+    });
   }
 
   formatTransactionDate(timestamp) {
     const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
+    // Format as "Dec 9, 2025"
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = monthNames[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
 
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${month} ${day}, ${year}`;
   }
 }
 
